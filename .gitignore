@@ -1,0 +1,11 @@
+Include
+Lib
+Scripts
+tcl
+LICENSE.txt
+**/__pycache__
+logs
+tmp
+build
+dist
+config
