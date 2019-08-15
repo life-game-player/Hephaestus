@@ -1,0 +1,15 @@
+QWidget#head{
+    border-top-left-radius:5px;
+    border-top-right-radius:5px;
+    background-color:red;
+}
+
+QWidget#body{
+    background-color:white;
+}
+
+QWidget#bottom{
+    border-bottom-left-radius:5px;
+    border-bottom-right-radius:5px;
+    background-color:gray;
+}
