@@ -43,6 +43,7 @@ QLabel#user_photo{
 
 QLabel#user_name{
     font-size:24px;
+    font-family:Arial,"Microsoft YaHei","微软雅黑";
     font-weight:bold;
     margin-left:10px;
     padding:0px;
@@ -50,6 +51,7 @@ QLabel#user_name{
 
 QLabel#user_info{
     font-size:18px;
+    font-family:Arial,"Microsoft YaHei","微软雅黑";
     margin-left:10px;
     padding:0px;
 }
@@ -58,8 +60,35 @@ QLabel#search_icon{
     background-color:green;
 }
 
+QPushButton#fold_button{
+    border:0px;
+    background-color:green;
+}
+
+QLabel#group_name{
+    padding-left:10px;
+    font-size:16px;
+    font-family:Arial,"Microsoft YaHei","微软雅黑";
+    font-weight:bold;
+}
+
+QLabel#tenant{
+    margin-top:10px;
+    padding-left:40px;
+    font-size:16px;
+}
+
 QWidget#bottom{
     border-bottom-left-radius:5px;
     border-bottom-right-radius:5px;
-    background-color:gray;
+    background-color:rgb(202, 12, 22);
+}
+
+QPushButton#settings{
+    border-image:url(images/settings.png);
+    padding:0px;
+}
+
+QPushButton#settings:hover{
+    background-color:rgb(255, 0, 0);
 }

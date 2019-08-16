@@ -63,7 +63,7 @@ class WindowMain(QtWidgets.QWidget):
         layout.addWidget(button_min_window)
         layout.addStretch(1)
         layout.addWidget(button_close_window)
-        layout.addStretch(1)
+        layout.addStretch(0.5)
         self.widget_window_buttons.setLayout(layout)
 
     def set_head_widget(self):
@@ -108,16 +108,63 @@ class WindowMain(QtWidgets.QWidget):
         lineedit_search.setObjectName('search_tenant')
         lineedit_search.setFixedSize(354, 30)
 
+        # 常用商户分组
+        button_fold_favourites = QtWidgets.QPushButton()
+        button_fold_favourites.setObjectName('fold_button')
+        button_fold_favourites.setFixedSize(30, 30)
+        label_favourite = QtWidgets.QLabel('常用商户')
+        label_favourite.setObjectName('group_name')
+
+        # 所有商户分组
+        button_fold_all = QtWidgets.QPushButton()
+        button_fold_all.setObjectName('fold_button')
+        button_fold_all.setFixedSize(30, 30)
+        label_all = QtWidgets.QLabel('所有商户')
+        label_all.setObjectName('group_name')
+
         # 布局
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(combobox_env)
         layout_h = QtWidgets.QHBoxLayout()
         layout_h.setSpacing(0)
+        layout_h.setContentsMargins(0, 0, 0, 0)
         layout_h.addWidget(label_search)
         layout_h.addWidget(lineedit_search)
-        layout.addWidget(combobox_env)
         layout.addLayout(layout_h)
+
+        layout_favourite_tenants = QtWidgets.QVBoxLayout()
+        layout_favourite_tenants.setSpacing(0)
+        layout_favourite_tenants.setContentsMargins(0, 10, 0, 0)
+        layout_favourite_group = QtWidgets.QHBoxLayout()
+        layout_favourite_group.setSpacing(0)
+        layout_favourite_group.setContentsMargins(0, 0, 0, 0)
+        layout_favourite_group.addWidget(button_fold_favourites)
+        layout_favourite_group.addWidget(label_favourite)
+        layout_favourite_tenants.addLayout(layout_favourite_group)
+        for i in range(5):
+            label_tenant = QtWidgets.QLabel('商户{}'.format(i))
+            label_tenant.setObjectName('tenant')
+            label_tenant.setFixedSize(384, 30)
+            layout_favourite_tenants.addWidget(label_tenant)
+        layout.addLayout(layout_favourite_tenants)
+
+        layout_all_tenants = QtWidgets.QVBoxLayout()
+        layout_all_tenants.setSpacing(0)
+        layout_all_tenants.setContentsMargins(0, 10, 0, 0)
+        layout_all_group = QtWidgets.QHBoxLayout()
+        layout_all_group.setSpacing(0)
+        layout_all_group.setContentsMargins(0, 0, 0, 0)
+        layout_all_group.addWidget(button_fold_all)
+        layout_all_group.addWidget(label_all)
+        layout_all_tenants.addLayout(layout_all_group)
+        for i in range(5):
+            label_tenant = QtWidgets.QLabel('商户{}'.format(i))
+            label_tenant.setObjectName('tenant')
+            label_tenant.setFixedSize(384, 30)
+            layout_all_tenants.addWidget(label_tenant)
+        layout.addLayout(layout_all_tenants)
         layout.addStretch()
         self.widget_body.setLayout(layout)
 
@@ -125,6 +172,18 @@ class WindowMain(QtWidgets.QWidget):
         self.widget_bottom = QtWidgets.QWidget()
         self.widget_bottom.setObjectName('bottom')
         self.widget_bottom.setFixedSize(384, 40)
+
+        # 设置按钮
+        button_setting = QtWidgets.QPushButton()
+        button_setting.setObjectName('settings')
+        button_setting.setFixedSize(20, 20)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(10, 0, 0, 0)
+        layout.addWidget(button_setting)
+        layout.addStretch()
+        self.widget_bottom.setLayout(layout)
 
     def mousePressEvent(self, event):
         if event.buttons() == QtCore.Qt.LeftButton:
