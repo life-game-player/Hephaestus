@@ -1,7 +1,11 @@
+QWidget#WindowMain{
+    padding:0px;
+}
+
 QWidget#window_buttons{
     border-top-left-radius:5px;
     border-top-right-radius:5px;
-    background-color:red;
+    background-color:rgb(202, 12, 22);
 }
 
 QPushButton#button_min_window{
@@ -10,18 +14,48 @@ QPushButton#button_min_window{
     padding:0px;
 }
 
+QPushButton#button_min_window:hover{
+    background-color:rgb(255, 0, 0);
+}
+
 QPushButton#button_close_window{
     background:transparent;
     border-image:url(images/close-window.png);
     padding:0px;
 }
 
+QPushButton#button_close_window:hover{
+    background-color:rgb(255, 0, 0);
+}
+
 QWidget#head{
-    background-color:red;
+    background-color:rgb(202, 12, 22);
 }
 
 QWidget#body{
     background-color:white;
+}
+
+QLabel#user_photo{
+    background-color:white;
+    border-radius:40px;
+}
+
+QLabel#user_name{
+    font-size:24px;
+    font-weight:bold;
+    margin-left:10px;
+    padding:0px;
+}
+
+QLabel#user_info{
+    font-size:18px;
+    margin-left:10px;
+    padding:0px;
+}
+
+QLabel#search_icon{
+    background-color:green;
 }
 
 QWidget#bottom{
