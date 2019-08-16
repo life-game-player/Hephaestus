@@ -14,7 +14,7 @@ class WindowMain(QtWidgets.QWidget):
         self.resize(self.window_width, self.window_height)
 
         # 设置窗口透明度
-        self.setWindowOpacity(0.5)
+        self.setWindowOpacity(0.7)
         # 设置窗口无边框
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint
@@ -23,6 +23,7 @@ class WindowMain(QtWidgets.QWidget):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         # 设置窗口子部件
+        self.set_window_buttons_widget()
         self.set_head_widget()
         self.set_body_widget()
         self.set_bottom_widget()
@@ -30,6 +31,7 @@ class WindowMain(QtWidgets.QWidget):
         # 窗口组装
         self.layout_main = QtWidgets.QVBoxLayout()
         self.layout_main.setSpacing(0)
+        self.layout_main.addWidget(self.widget_window_buttons)
         self.layout_main.addWidget(self.widget_head)
         self.layout_main.addWidget(self.widget_body)
         self.layout_main.addWidget(self.widget_bottom)
@@ -38,12 +40,34 @@ class WindowMain(QtWidgets.QWidget):
         # 设置样式
         QSSSetter.set_qss(self, __file__)
 
+    def set_window_buttons_widget(self):
+        self.widget_window_buttons = QtWidgets.QWidget()
+        self.widget_window_buttons.setObjectName('window_buttons')
+        self.widget_window_buttons.setFixedSize(self.window_width, 40)
+
+        # 窗口按钮(最小化和关闭按钮)
+        layout = QtWidgets.QHBoxLayout()
+        layout.setSpacing(0)
+
+        button_min_window = QtWidgets.QPushButton()
+        button_min_window.setObjectName('button_min_window')
+        button_min_window.setFixedSize(25, 25)
+        button_close_window = QtWidgets.QPushButton()
+        button_close_window.setFixedSize(25, 25)
+        button_close_window.setObjectName('button_close_window')
+
+        layout.addStretch(30)
+        layout.addWidget(button_min_window)
+        layout.addStretch(1)
+        layout.addWidget(button_close_window)
+        self.widget_window_buttons.setLayout(layout)
+
     def set_head_widget(self):
         self.widget_head = QtWidgets.QWidget()
         self.widget_head.setObjectName('head')
         self.widget_head.setFixedSize(
             self.window_width,
-            self.window_height * 0.2
+            self.window_height * 0.2 - 40
         )
 
     def set_body_widget(self):
