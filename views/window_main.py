@@ -134,7 +134,11 @@ class WindowMain(QtWidgets.QWidget):
         layout_h.addWidget(lineedit_search)
         layout.addLayout(layout_h)
 
+        frame_favourite_tenants = QtWidgets.QFrame()
         layout_favourite_tenants = QtWidgets.QVBoxLayout()
+        button_fold_favourites.clicked.connect(
+            lambda: self.fold_frame(frame_favourite_tenants)
+        )
         layout_favourite_tenants.setSpacing(0)
         layout_favourite_tenants.setContentsMargins(0, 10, 0, 0)
         layout_favourite_group = QtWidgets.QHBoxLayout()
@@ -142,15 +146,20 @@ class WindowMain(QtWidgets.QWidget):
         layout_favourite_group.setContentsMargins(0, 0, 0, 0)
         layout_favourite_group.addWidget(button_fold_favourites)
         layout_favourite_group.addWidget(label_favourite)
-        layout_favourite_tenants.addLayout(layout_favourite_group)
         for i in range(5):
             label_tenant = QtWidgets.QLabel('商户{}'.format(i))
             label_tenant.setObjectName('tenant')
             label_tenant.setFixedSize(384, 30)
             layout_favourite_tenants.addWidget(label_tenant)
-        layout.addLayout(layout_favourite_tenants)
+        frame_favourite_tenants.setLayout(layout_favourite_tenants)
+        layout.addLayout(layout_favourite_group)
+        layout.addWidget(frame_favourite_tenants)
 
+        frame_all_tenants = QtWidgets.QFrame()
         layout_all_tenants = QtWidgets.QVBoxLayout()
+        button_fold_all.clicked.connect(
+            lambda: self.fold_frame(frame_all_tenants)
+        )
         layout_all_tenants.setSpacing(0)
         layout_all_tenants.setContentsMargins(0, 10, 0, 0)
         layout_all_group = QtWidgets.QHBoxLayout()
@@ -158,13 +167,14 @@ class WindowMain(QtWidgets.QWidget):
         layout_all_group.setContentsMargins(0, 0, 0, 0)
         layout_all_group.addWidget(button_fold_all)
         layout_all_group.addWidget(label_all)
-        layout_all_tenants.addLayout(layout_all_group)
         for i in range(5):
             label_tenant = QtWidgets.QLabel('商户{}'.format(i))
             label_tenant.setObjectName('tenant')
             label_tenant.setFixedSize(384, 30)
             layout_all_tenants.addWidget(label_tenant)
-        layout.addLayout(layout_all_tenants)
+        frame_all_tenants.setLayout(layout_all_tenants)
+        layout.addLayout(layout_all_group)
+        layout.addWidget(frame_all_tenants)
         layout.addStretch()
         self.widget_body.setLayout(layout)
 
@@ -184,6 +194,12 @@ class WindowMain(QtWidgets.QWidget):
         layout.addWidget(button_setting)
         layout.addStretch()
         self.widget_bottom.setLayout(layout)
+
+    def fold_frame(self, frame):
+        if frame.isHidden():
+            frame.show()
+        else:
+            frame.hide()
 
     def mousePressEvent(self, event):
         if event.buttons() == QtCore.Qt.LeftButton:
