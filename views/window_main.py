@@ -38,6 +38,11 @@ class WindowMain(QtWidgets.QWidget):
         self.layout_main.setSpacing(0)
         self.setLayout(self.layout_main)
 
+        # 鼠标状态
+        self.setMouseTracking(True)
+        self.is_left_button_pressed = False  # 左键是否按下
+        self.edge_range = 4
+
         # 设置样式
         QSSSetter.set_qss(self, __file__)
 
@@ -203,11 +208,60 @@ class WindowMain(QtWidgets.QWidget):
 
     def mousePressEvent(self, event):
         if event.buttons() == QtCore.Qt.LeftButton:
-            self.dragPos = event.globalPos()
+            self.drag_pos = event.globalPos()
+            self.is_left_button_pressed = True
             event.accept()
 
     def mouseMoveEvent(self, event):
         if event.buttons() == QtCore.Qt.LeftButton:
-            self.move(self.pos() + event.globalPos() - self.dragPos)
-            self.dragPos = event.globalPos()
+            self.move(self.pos() + event.globalPos() - self.drag_pos)
+            self.drag_pos = event.globalPos()
+            event.accept()
+        else:
+            mouse_x = event.globalPos().x()
+            mouse_y = event.globalPos().y()
+            rect_window = self.rect()
+            topleft_point = self.mapToGlobal(rect_window.topLeft())
+            rightbottom_point = self.mapToGlobal(rect_window.bottomRight())
+            if (topleft_point.x() + self.edge_range) >= mouse_x and tl.x() <= x and tl.y() + self.edge_range >= y and tl.y() <= y: 
+              #左上角 
+              self.dir = self.Numbers.LEFTTOP 
+              self.setCursor(QCursor(Qt.SizeFDiagCursor))  #设置鼠标形状 
+            elif(x >= rb.x() - self.edge_range and x <= rb.x() and y >= rb.y() - self.edge_range and y <= rb.y()): 
+              #右下角 
+              self.dir = self.Numbers.RIGHTBOTTOM 
+              self.setCursor(QCursor(Qt.SizeFDiagCursor)) 
+            elif(x <= tl.x() + self.edge_range and x >= tl.x() and y >= rb.y() - self.edge_range and y <= rb.y()): 
+              #左下角 
+              self.dir = self.Numbers.LEFTBOTTOM 
+              self.setCursor(QCursor(Qt.SizeBDiagCursor)) 
+            elif(x <= rb.x() and x >= rb.x() - self.edge_range and y >= tl.y() and y <= tl.y() + self.edge_range): 
+              #右上角 
+              self.dir = self.Numbers.RIGHTTOP 
+              self.setCursor(QCursor(Qt.SizeBDiagCursor)) 
+            elif(x <= tl.x() + self.edge_range and x >= tl.x()): 
+              #左边 
+              self.dir = self.Numbers.LEFT 
+              self.setCursor(QCursor(Qt.SizeHorCursor)) 
+            elif( x <= rb.x() and x >= rb.x() - self.edge_range): 
+              #右边 
+         
+              self.dir = self.Numbers.RIGHT 
+              self.setCursor(QCursor(Qt.SizeHorCursor)) 
+            elif(y >= tl.y() and y <= tl.y() + self.edge_range): 
+              #上边 
+              self.dir = self.Numbers.UP 
+              self.setCursor(QCursor(Qt.SizeVerCursor)) 
+            elif(y <= rb.y() and y >= rb.y() - self.edge_range): 
+              #下边 
+              self.dir = self.Numbers.DOWN 
+              self.setCursor(QCursor(Qt.SizeVerCursor)) 
+            else: 
+              #默认 
+              self.dir = self.Numbers.NONE 
+              self.setCursor(QCursor(Qt.ArrowCursor)) 
+
+    def mouseReleaseEvent(self, event):
+        if event.buttons() == QtCore.Qt.LeftButton:
+            self.is_left_button_pressed = False
             event.accept()
