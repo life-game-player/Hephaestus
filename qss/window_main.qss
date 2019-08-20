@@ -1,7 +1,3 @@
-QWidget#WindowMain{
-    padding:0px;
-}
-
 QWidget#window_buttons{
     border-top-left-radius:5px;
     border-top-right-radius:5px;
@@ -11,7 +7,6 @@ QWidget#window_buttons{
 QPushButton#button_min_window{
     background:transparent;
     border-image:url(images/minimize-window.png);
-    padding:0px;
 }
 
 QPushButton#button_min_window:hover{
@@ -21,7 +16,6 @@ QPushButton#button_min_window:hover{
 QPushButton#button_close_window{
     background:transparent;
     border-image:url(images/close-window.png);
-    padding:0px;
 }
 
 QPushButton#button_close_window:hover{
