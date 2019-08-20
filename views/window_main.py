@@ -167,7 +167,8 @@ class WindowMain(QtWidgets.QWidget):
         frame_favourite_tenants = QtWidgets.QFrame()
         layout_favourite_tenants = QtWidgets.QVBoxLayout()
         button_fold_favourites.clicked.connect(
-            lambda: self.fold_frame(frame_favourite_tenants)
+            lambda: self.fold_frame(
+                frame_favourite_tenants, button_fold_favourites)
         )
         layout_favourite_tenants.setSpacing(0)
         layout_favourite_tenants.setContentsMargins(0, 10, 0, 0)
@@ -188,7 +189,7 @@ class WindowMain(QtWidgets.QWidget):
         frame_all_tenants = QtWidgets.QFrame()
         layout_all_tenants = QtWidgets.QVBoxLayout()
         button_fold_all.clicked.connect(
-            lambda: self.fold_frame(frame_all_tenants)
+            lambda: self.fold_frame(frame_all_tenants, button_fold_all)
         )
         layout_all_tenants.setSpacing(0)
         layout_all_tenants.setContentsMargins(0, 10, 0, 0)
@@ -226,10 +227,18 @@ class WindowMain(QtWidgets.QWidget):
         layout.addStretch()
         self.widget_bottom.setLayout(layout)
 
-    def fold_frame(self, frame):
+    def fold_frame(self, frame, button):
         if frame.isHidden():
+            # 展开
+            button.setStyleSheet(
+                'QPushButton{background-image:url(images/arrow_down.png);}'
+            )
             frame.show()
         else:
+            # 收起
+            button.setStyleSheet(
+                'QPushButton{background-image:url(images/arrow_right.png);}'
+            )
             frame.hide()
 
     def mousePressEvent(self, event):

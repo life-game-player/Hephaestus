@@ -58,12 +58,16 @@ QComboBox#env{
 }
 
 QLabel#search_icon{
-    background-color:green;
+    background-image:url(images/search.png);
+    background-position:center;
+    background-repeat:none;
 }
 
 QPushButton#fold_button{
     border:0px;
-    background-color:green;
+    background-image:url(images/arrow_down.png);
+    background-position:center;
+    background-repeat:none;
 }
 
 QLabel#group_name{

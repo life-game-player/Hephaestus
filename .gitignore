@@ -10,4 +10,3 @@ build
 dist
 config
 *.spec
-images
