@@ -24,7 +24,7 @@ class WindowMain(QtWidgets.QWidget):
             QtCore.Qt.FramelessWindowHint
         )
         # 设置窗口背景透明
-        #self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         # 设置窗口子部件
         self.set_window_buttons_widget()
@@ -44,7 +44,7 @@ class WindowMain(QtWidgets.QWidget):
 
         # 鼠标状态
         self.setMouseTracking(True)
-        self.edge_range = 2
+        self.edge_range = 4
         self.mouse_pos = None  # 鼠标相对于窗口的位置
         self.is_left_button_pressed = False
 
@@ -273,22 +273,11 @@ class WindowMain(QtWidgets.QWidget):
                 mouse_y <= (rightbottom_point.y() + self.edge_range)
             ):
                 self.mouse_pos = 'BOTTOM'
-            elif (
-                (topleft_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (topleft_point.x() + self.edge_range) and
-                (topleft_point.y() + self.edge_range) < mouse_y and
-                mouse_y < (rightbottom_point.y() - self.edge_range)
-            ):
-                self.mouse_pos = 'LEFT'
-            elif (
-                (rightbottom_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (rightbottom_point.x() + self.edge_range) and
-                (topleft_point.y() + self.edge_range) < mouse_y and
-                mouse_y < (rightbottom_point.y() - self.edge_range)
-            ):
-                self.mouse_pos = 'RIGHT'
             else:
                 self.drag_pos = event.globalPos()  # 拖拽起始点坐标
+                self.setCursor(
+                    QCursor(QtCore.Qt.OpenHandCursor)
+                )
             print(self.mouse_pos)
             event.accept()
 
@@ -306,6 +295,7 @@ class WindowMain(QtWidgets.QWidget):
                 (topleft_point.y() - self.edge_range) <= mouse_y and
                 mouse_y <= (topleft_point.y() + self.edge_range)
             ):
+                # 左上
                 self.setCursor(
                     QCursor(QtCore.Qt.SizeFDiagCursor)
                 )  # 设置鼠标形状
@@ -315,6 +305,7 @@ class WindowMain(QtWidgets.QWidget):
                 (topleft_point.y() - self.edge_range) <= mouse_y and
                 mouse_y <= (topleft_point.y() + self.edge_range)
             ):
+                # 右上
                 self.setCursor(
                     QCursor(QtCore.Qt.SizeBDiagCursor)
                 )  # 设置鼠标形状
@@ -324,6 +315,7 @@ class WindowMain(QtWidgets.QWidget):
                 (rightbottom_point.y() - self.edge_range) <= mouse_y and
                 mouse_y <= (rightbottom_point.y() + self.edge_range)
             ):
+                # 左下
                 self.setCursor(
                     QCursor(QtCore.Qt.SizeBDiagCursor)
                 )  # 设置鼠标形状
@@ -333,6 +325,7 @@ class WindowMain(QtWidgets.QWidget):
                 (rightbottom_point.y() - self.edge_range) <= mouse_y and
                 mouse_y <= (rightbottom_point.y() + self.edge_range)
             ):
+                # 右下
                 self.setCursor(
                     QCursor(QtCore.Qt.SizeFDiagCursor)
                 )  # 设置鼠标形状
@@ -342,6 +335,7 @@ class WindowMain(QtWidgets.QWidget):
                 (topleft_point.y() - self.edge_range) <= mouse_y and
                 mouse_y <= (topleft_point.y() + self.edge_range)
             ):
+                # 上
                 self.setCursor(
                     QCursor(QtCore.Qt.SizeVerCursor)
                 )  # 设置鼠标形状
@@ -351,26 +345,9 @@ class WindowMain(QtWidgets.QWidget):
                 (rightbottom_point.y() - self.edge_range) <= mouse_y and
                 mouse_y <= (rightbottom_point.y() + self.edge_range)
             ):
+                # 下
                 self.setCursor(
                     QCursor(QtCore.Qt.SizeVerCursor)
-                )  # 设置鼠标形状
-            elif (
-                (topleft_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (topleft_point.x() + self.edge_range) and
-                (topleft_point.y() + self.edge_range) < mouse_y and
-                mouse_y < (rightbottom_point.y() - self.edge_range)
-            ):
-                self.setCursor(
-                    QCursor(QtCore.Qt.SizeHorCursor)
-                )  # 设置鼠标形状
-            elif (
-                (rightbottom_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (rightbottom_point.x() + self.edge_range) and
-                (topleft_point.y() + self.edge_range) < mouse_y and
-                mouse_y < (rightbottom_point.y() - self.edge_range)
-            ):
-                self.setCursor(
-                    QCursor(QtCore.Qt.SizeHorCursor)
                 )  # 设置鼠标形状
             else:
                 self.setCursor(
@@ -384,112 +361,85 @@ class WindowMain(QtWidgets.QWidget):
         else:
             rect_new = QtCore.QRect(topleft_point, rightbottom_point)
             if self.mouse_pos == 'LEFTTOP':
-                if rightbottom_point.x() - mouse_x < self.window_min_width:
-                    rect_new.setX(
-                        rightbottom_point.x() - self.window_min_width
-                    )
-                elif rightbottom_point.x() - mouse_x > self.window_max_width:
-                    rect_new.setX(
-                        rightbottom_point.x() - self.window_max_width
-                    )
-                else:
+                if (
+                    self.window_min_width <
+                    rightbottom_point.x() - mouse_x <
+                    self.window_max_width
+                ):
                     rect_new.setX(mouse_x)
 
-                if rightbottom_point.y() - mouse_y < self.window_min_height:
-                    rect_new.setY(
-                        rightbottom_point.y() - self.window_min_height
-                    )
-                elif rightbottom_point.y() - mouse_y > self.window_max_height:
-                    rect_new.setY(
-                        rightbottom_point.y() - self.window_max_height
-                    )
-                else:
+                if (
+                    self.window_min_height <
+                    rightbottom_point.y() - mouse_y <
+                    self.window_max_height
+                ):
                     rect_new.setY(mouse_y)
+
             if self.mouse_pos == 'TOP':
-                if rightbottom_point.y() - mouse_y < self.window_min_height:
-                    rect_new.setY(
-                        rightbottom_point.y() - self.window_min_height
-                    )
-                elif rightbottom_point.y() - mouse_y > self.window_max_height:
-                    rect_new.setY(
-                        rightbottom_point.y() - self.window_max_height
-                    )
-                else:
+                if (
+                    self.window_min_height <
+                    rightbottom_point.y() - mouse_y <
+                    self.window_max_height
+                ):
                     rect_new.setY(mouse_y)
-            if self.mouse_pos == 'LEFT':
-                if rightbottom_point.x() - mouse_x < self.window_min_width:
-                    rect_new.setX(
-                        rightbottom_point.x() - self.window_min_width
-                    )
-                elif rightbottom_point.x() - mouse_x > self.window_max_width:
-                    rect_new.setX(
-                        rightbottom_point.x() - self.window_max_width
-                    )
-                else:
-                    rect_new.setX(mouse_x)
+
             if self.mouse_pos == 'RIGHTBOTTOM':
-                if mouse_x - topleft_point.x() < self.window_min_width:
-                    rect_new.setX(topleft_point.x() + self.window_min_width)
-                elif mouse_x - topleft_point.x() > self.window_max_width:
-                    rect_new.setX(topleft_point.x() + self.window_max_width)
-                else:
+                if (
+                    self.window_min_width <
+                    mouse_x - topleft_point.x() <
+                    self.window_max_width
+                ):
                     rect_new.setX(mouse_x)
-                if mouse_y - topleft_point.y() < self.window_min_height:
-                    rect_new.setY(topleft_point.y() + self.window_min_height)
-                elif mouse_y - topleft_point.y() > self.window_max_height:
-                    rect_new.setY(topleft_point.y() + self.window_max_height)
-                else:
+                if (
+                    self.window_min_height <
+                    mouse_y - topleft_point.y() <
+                    self.window_max_height
+                ):
                     rect_new.setY(mouse_y)
-            if self.mouse_pos == 'RIGHT':
-                if mouse_x - topleft_point.x() < self.window_min_width:
-                    rect_new.setX(topleft_point.x() + self.window_min_width)
-                elif mouse_x - topleft_point.x() > self.window_max_width:
-                    rect_new.setX(topleft_point.x() + self.window_max_width)
-                else:
-                    rect_new.setX(mouse_x)
+
             if self.mouse_pos == 'BOTTOM':
-                if mouse_y - topleft_point.y() < self.window_min_height:
-                    rect_new.setY(topleft_point.y() + self.window_min_height)
-                elif mouse_y - topleft_point.y() > self.window_max_height:
-                    rect_new.setY(topleft_point.y() + self.window_max_height)
-                else:
+                if (
+                    self.window_min_height <
+                    mouse_y - topleft_point.y() <
+                    self.window_max_height
+                ):
                     rect_new.setY(mouse_y)
+
             if self.mouse_pos == 'RIGHTTOP':
-                if mouse_x - topleft_point.x() < self.window_min_width:
-                    rect_new.setX(topleft_point.x() + self.window_min_width)
-                elif mouse_x - topleft_point.x() > self.window_max_width:
-                    rect_new.setX(topleft_point.x() + self.window_max_width)
-                else:
+                if (
+                    self.window_min_width <
+                    mouse_x - topleft_point.x() <
+                    self.window_max_width
+                ):
                     rect_new.setX(mouse_x)
-                if rightbottom_point.y() - mouse_y < self.window_min_height:
-                    rect_new.setY(
-                        rightbottom_point.y() - self.window_min_height
-                    )
-                elif rightbottom_point.y() - mouse_y > self.window_max_height:
-                    rect_new.setY(
-                        rightbottom_point.y() - self.window_max_height
-                    )
-                else:
+                if (
+                    self.window_min_height <
+                    rightbottom_point.y() - mouse_y <
+                    self.window_max_height
+                ):
                     rect_new.setY(mouse_y)
+
             if self.mouse_pos == 'LEFTBOTTOM':
-                if rightbottom_point.x() - mouse_x < self.window_min_width:
-                    rect_new.setX(
-                        rightbottom_point.x() - self.window_min_width
-                    )
-                elif rightbottom_point.x() - mouse_x > self.window_max_width:
-                    rect_new.setX(rightbottom_point - self.window_max_width)
-                else:
+                if (
+                    self.window_min_width <
+                    rightbottom_point.x() - mouse_x <
+                    self.window_max_width
+                ):
                     rect_new.setX(mouse_x)
-                if mouse_y - topleft_point.y() < self.window_min_height:
-                    rect_new.setY(topleft_point.y() + self.window_min_height)
-                elif mouse_y - topleft_point.y() > self.window_max_height:
-                    rect_new.setY(topleft_point.y() + self.window_max_height)
-                else:
+                if (
+                    self.window_min_height <
+                    mouse_y - topleft_point.y() <
+                    self.window_max_height
+                ):
                     rect_new.setY(mouse_y)
+
             self.setGeometry(rect_new)
 
     def mouseReleaseEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             self.mouse_pos = None
             self.is_left_button_pressed = False
+            self.setCursor(
+                QCursor(QtCore.Qt.ArrowCursor)
+            )
             event.accept()
