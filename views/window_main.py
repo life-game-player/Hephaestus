@@ -1,6 +1,8 @@
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
+from PyQt5 import QtGui
 from PyQt5.QtGui import QCursor
+import rpyc
 
 from qss.qss_setter import QSSSetter
 
@@ -8,6 +10,9 @@ from qss.qss_setter import QSSSetter
 class WindowMain(QtWidgets.QWidget):
     def __init__(self, screen_width, screen_height):
         super().__init__()
+
+        # 连接服务
+        self.kos = rpyc.connect("localhost", 18861)
 
         # 设置窗口大小
         self.window_min_width = 384
@@ -120,6 +125,10 @@ class WindowMain(QtWidgets.QWidget):
 
         # 环境选择下拉框和商户搜索组件
         combobox_env = QtWidgets.QComboBox()
+        listview_combobox = QtWidgets.QListView()
+        listview_combobox.setObjectName('env_list')
+        combobox_env.setView(listview_combobox)
+        combobox_env.addItems(self.kos.root.get_environments())
         combobox_env.setObjectName('env')
         combobox_env.setFixedSize(self.window_min_width, 30)
         label_search = QtWidgets.QLabel()

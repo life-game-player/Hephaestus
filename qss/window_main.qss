@@ -50,6 +50,13 @@ QLabel#user_info{
     padding:0px;
 }
 
+QComboBox#env{
+    font-size:14px;
+    font-family:Arial,"Microsoft YaHei","微软雅黑";
+    height:30px;
+    padding-left:5px;
+}
+
 QLabel#search_icon{
     background-color:green;
 }
@@ -85,4 +92,11 @@ QPushButton#settings{
 
 QPushButton#settings:hover{
     background-color:rgb(255, 0, 0);
+}
+
+QListView#env_list::item{
+    height:30px;
+    font-size:14px;
+    font-family:Arial,"Microsoft YaHei","微软雅黑";
+    padding-left:5px;
 }
