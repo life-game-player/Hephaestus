@@ -23,7 +23,7 @@ class WindowMain(QtWidgets.QWidget):
         self.setMaximumSize(self.window_max_width, self.window_max_height)
 
         # 设置窗口透明度
-        self.setWindowOpacity(0.7)
+        self.setWindowOpacity(0.8)
         # 设置窗口无边框
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint
@@ -135,6 +135,7 @@ class WindowMain(QtWidgets.QWidget):
         label_search.setObjectName('search_icon')
         label_search.setFixedSize(30, 30)
         lineedit_search = QtWidgets.QLineEdit()
+        lineedit_search.setPlaceholderText('搜索商户')
         lineedit_search.setObjectName('search_tenant')
         lineedit_search.setFixedSize(self.window_min_width - 30, 30)
 
@@ -296,7 +297,6 @@ class WindowMain(QtWidgets.QWidget):
                 self.setCursor(
                     QCursor(QtCore.Qt.OpenHandCursor)
                 )
-            print(self.mouse_pos)
             event.accept()
 
     def mouseMoveEvent(self, event):
