@@ -23,7 +23,7 @@ class WindowMain(QtWidgets.QWidget):
         self.setMaximumSize(self.window_max_width, self.window_max_height)
 
         # 设置窗口透明度
-        self.setWindowOpacity(0.8)
+        #self.setWindowOpacity(0.8)
         # 设置窗口无边框
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint
@@ -109,8 +109,11 @@ class WindowMain(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(layout_v)
         layout.addStretch(10)
+        layout_v.addStretch(2)
         layout_v.addWidget(label_username)
+        layout_v.addStretch(1)
         layout_v.addWidget(label_userinfo)
+        layout_v.addStretch(2)
         self.widget_head.setLayout(layout)
 
     def set_body_widget(self):
