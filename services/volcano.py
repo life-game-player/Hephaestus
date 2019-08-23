@@ -1,5 +1,4 @@
 import getpass
-from threading import Timer
 import threading
 import logging
 import logging.handlers
@@ -55,7 +54,7 @@ if lighted:
         )
         thread_reset_option.daemon = True
         thread_reset_option.start()
-        thread_reset_option.join(10)  # 等待用户输入(10秒)
+        thread_reset_option.join(6)  # 等待用户输入(10秒)
         if special == 'Hera':
             while True:
                 passwd1 = getpass.getpass('请重置主宰的密令: ')

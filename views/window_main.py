@@ -6,13 +6,44 @@ import rpyc
 
 from qss.qss_setter import QSSSetter
 
+import logging
+import logging.handlers
+
 
 class WindowMain(QtWidgets.QWidget):
-    def __init__(self, screen_width, screen_height):
+    def __init__(self, session_id, token):
         super().__init__()
 
+        self.session_id = session_id
+
+        # 日志设置
+        logging_handler = logging.handlers.RotatingFileHandler(
+            'logs/main.log',
+            'a',
+            1024 * 1024,
+            10,
+            'utf-8'
+        )
+        logging_format = logging.Formatter(
+            '%(asctime)s [%(name)s - %(levelname)s] %(message)s'
+        )
+        logging_handler.setFormatter(logging_format)
+        logger = logging.getLogger()
+        logger.addHandler(logging_handler)
+        logger.setLevel(logging.DEBUG)
+
         # 连接服务
-        self.kos = rpyc.connect("localhost", 18861)
+        self.kos = None
+        try:
+            self.kos = rpyc.connect("localhost", 18861)
+        except Exception as e:
+            logging.error(
+                "{} occured".format(type(e).__name__),
+                exc_info=True
+            )
+
+        # 公用标记
+        self.tab = 'tenants'
 
         # 设置窗口大小
         self.window_min_width = 384
@@ -24,6 +55,7 @@ class WindowMain(QtWidgets.QWidget):
 
         # 设置窗口透明度
         #self.setWindowOpacity(0.8)
+
         # 设置窗口无边框
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint
@@ -123,7 +155,7 @@ class WindowMain(QtWidgets.QWidget):
         self.widget_body.setMinimumSize(self.window_min_width, 550)
         self.widget_body.setMaximumSize(
             self.window_min_width,
-            self.window_max_height - 40 - 120
+            self.window_max_height - 45 - 120
         )
 
         # 环境选择下拉框和商户搜索组件
@@ -131,14 +163,15 @@ class WindowMain(QtWidgets.QWidget):
         listview_combobox = QtWidgets.QListView()
         listview_combobox.setObjectName('env_list')
         combobox_env.setView(listview_combobox)
-        combobox_env.addItems(self.kos.root.get_environments())
+        if self.kos:
+            combobox_env.addItems(self.kos.root.get_environments())
         combobox_env.setObjectName('env')
         combobox_env.setFixedSize(self.window_min_width, 30)
         label_search = QtWidgets.QLabel()
         label_search.setObjectName('search_icon')
         label_search.setFixedSize(30, 30)
         lineedit_search = QtWidgets.QLineEdit()
-        lineedit_search.setPlaceholderText('搜索商户')
+        lineedit_search.setPlaceholderText('搜索')
         lineedit_search.setObjectName('search_tenant')
         lineedit_search.setFixedSize(self.window_min_width - 30, 30)
 
@@ -156,6 +189,15 @@ class WindowMain(QtWidgets.QWidget):
         label_all = QtWidgets.QLabel('所有商户')
         label_all.setObjectName('group_name')
 
+        # Tab切换
+        self.frame_tenants = QtWidgets.QFrame()
+        layout_tenants = QtWidgets.QVBoxLayout()
+        layout_tenants.setSpacing(0)
+        layout_tenants.setContentsMargins(0, 0, 0, 0)
+        self.frame_tools = QtWidgets.QFrame()
+        layout_tools = QtWidgets.QVBoxLayout()
+        self.frame_tools.hide()
+
         # 布局
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(0)
@@ -166,7 +208,31 @@ class WindowMain(QtWidgets.QWidget):
         layout_h.setContentsMargins(0, 0, 0, 0)
         layout_h.addWidget(label_search)
         layout_h.addWidget(lineedit_search)
+        layout_tab = QtWidgets.QHBoxLayout()
+        button_group_view = QtWidgets.QButtonGroup(self)
+        button_view_tenants = QtWidgets.QPushButton('商户')
+        button_view_tenants.setFixedSize(192, 40)
+        button_view_tenants.setObjectName('tab')
+        button_view_tenants.setCheckable(True)
+        button_view_tenants.setChecked(True)
+        button_view_tenants.clicked.connect(
+            lambda: self.swith_tenants_tools('tenants')
+        )
+        button_view_tools = QtWidgets.QPushButton('工具')
+        button_view_tools.setFixedSize(192, 40)
+        button_view_tools.setObjectName('tab')
+        button_view_tools.setCheckable(True)
+        button_view_tools.clicked.connect(
+            lambda: self.swith_tenants_tools('tools')
+        )
+        button_group_view.addButton(button_view_tenants)
+        button_group_view.addButton(button_view_tools)
+        layout_tab.setSpacing(0)
+        layout_tab.setContentsMargins(0, 0, 0, 0)
+        layout_tab.addWidget(button_view_tenants)
+        layout_tab.addWidget(button_view_tools)
         layout.addLayout(layout_h)
+        layout.addLayout(layout_tab)
 
         frame_favourite_tenants = QtWidgets.QFrame()
         layout_favourite_tenants = QtWidgets.QVBoxLayout()
@@ -187,8 +253,8 @@ class WindowMain(QtWidgets.QWidget):
             label_tenant.setFixedSize(self.window_min_width, 30)
             layout_favourite_tenants.addWidget(label_tenant)
         frame_favourite_tenants.setLayout(layout_favourite_tenants)
-        layout.addLayout(layout_favourite_group)
-        layout.addWidget(frame_favourite_tenants)
+        layout_tenants.addLayout(layout_favourite_group)
+        layout_tenants.addWidget(frame_favourite_tenants)
 
         frame_all_tenants = QtWidgets.QFrame()
         layout_all_tenants = QtWidgets.QVBoxLayout()
@@ -208,25 +274,31 @@ class WindowMain(QtWidgets.QWidget):
             label_tenant.setFixedSize(self.window_min_width, 30)
             layout_all_tenants.addWidget(label_tenant)
         frame_all_tenants.setLayout(layout_all_tenants)
-        layout.addLayout(layout_all_group)
-        layout.addWidget(frame_all_tenants)
-        layout.addStretch()
+        layout_tenants.addLayout(layout_all_group)
+        layout_tenants.addWidget(frame_all_tenants)
+        layout_tenants.addStretch()
+        self.frame_tenants.setLayout(layout_tenants)
+
+        layout.addWidget(self.frame_tenants)
+        layout.addWidget(self.frame_tools)
         self.widget_body.setLayout(layout)
 
     def set_bottom_widget(self):
         self.widget_bottom = QtWidgets.QWidget()
         self.widget_bottom.setMouseTracking(True)
         self.widget_bottom.setObjectName('bottom')
-        self.widget_bottom.setFixedSize(self.window_min_width, 40)
+        self.widget_bottom.setFixedSize(self.window_min_width, 45)
 
         # 设置按钮
-        button_setting = QtWidgets.QPushButton()
+        button_setting = QtWidgets.QPushButton('管理')
+        button_setting.setIcon(QtGui.QIcon('images/settings.png'))
+        button_setting.setIconSize(QtCore.QSize(30, 30))
         button_setting.setObjectName('settings')
-        button_setting.setFixedSize(20, 20)
+        #button_setting.setFixedSize(45, 45)
 
         layout = QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
-        layout.setContentsMargins(10, 0, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(button_setting)
         layout.addStretch()
         self.widget_bottom.setLayout(layout)
@@ -464,3 +536,13 @@ class WindowMain(QtWidgets.QWidget):
                 QCursor(QtCore.Qt.ArrowCursor)
             )
             event.accept()
+
+    def swith_tenants_tools(self, tab):
+        if tab == 'tenants':
+            self.frame_tenants.show()
+            self.frame_tools.hide()
+            self.tab = tab
+        elif tab == 'tools':
+            self.frame_tenants.hide()
+            self.frame_tools.show()
+            self.tab = tab

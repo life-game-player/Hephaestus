@@ -1,8 +1,9 @@
 import sys
+import uuid
 
 from PyQt5 import QtWidgets
 
-from views.window_main import WindowMain
+from views.window_login import WindowLogin
 
 
 def main():
@@ -12,8 +13,11 @@ def main():
     screen_resolution = app.desktop().screenGeometry()
     width, height = screen_resolution.width(), screen_resolution.height()
 
-    window_main = WindowMain(width, height)
-    window_main.show()
+    session_id = str(uuid.uuid4())
+    window_login = WindowLogin(session_id, width, height)
+    window_login.show()
+    #window_main = WindowMain(width, height)
+    #window_main.show()
     sys.exit(app.exec_())
 
 

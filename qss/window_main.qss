@@ -101,12 +101,16 @@ QWidget#bottom{
 }
 
 QPushButton#settings{
-    border-image:url(images/settings.png);
-    padding:0px;
+    background:transparent;
+    padding:1px 10px 1px 10px;
+    font-size:14px;
+    font-family:"微软雅黑";
+    height:45px;
 }
 
 QPushButton#settings:hover{
-    background-color:rgb(255, 0, 0);
+    background-color:rgb(255,102,51);
+    border-bottom-left-radius:5px;
 }
 
 QListView#env_list::item{
@@ -115,4 +119,17 @@ QListView#env_list::item{
     font-family:"微软雅黑";
     padding-left:5px;
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(255,153,102),stop:1 rgb(255,255,255));
+}
+
+QPushButton#tab{
+    background-color:white;
+    font-size:16px;
+    font-family:"微软雅黑";
+    border:None;
+    text-align:justify;
+}
+
+QPushButton#tab:checked{
+    border:None;
+    border-bottom:2px solid red;
 }

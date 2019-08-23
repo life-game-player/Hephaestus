@@ -29,8 +29,7 @@ def query(conn, sql):
             results = c.fetchall()
             return results
     except Exception as e:
-        print(e.args)
-        return None
+        raise e
     finally:
         conn.close()
 
@@ -40,7 +39,9 @@ def update(conn, list_sql):
         with conn.cursor() as c:
             for sql in list_sql:
                 c.execute(sql)
+                results = c.fetchall()
         conn.commit()
+        return results
     except Exception as e:
         conn.rollback()
         raise e
@@ -123,6 +124,30 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
         "access_level INT NOT NULL COMMENT '1: Tagrag, 2: Lord, 3: King', "
         "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
         ")"
+    )
+    list_sql.append(sql)
+    sql = (
+        "CREATE PROCEDURE login(_user VARCHAR(50), _passwd VARCHAR(100)) "
+        "BEGIN "
+        "SET @id = NULL; "
+        "SET @secret = NULL; "
+        "SET @input_secret = SHA2(_passwd, 256);"
+        "SELECT id, secret INTO @id, @secret FROM gods "
+        "WHERE name = _user; "
+        "IF @id IS NOT NULL THEN "
+        "UPDATE gods "
+        "SET last_login = IF(@secret = @input_secret, NOW(3), last_login), "
+        "failures_since_last_login = "
+        "IF(@secret = @input_secret, 0, failures_since_last_login + 1), "
+        "failures_since_last_login_today = "
+        "IF(CAST(NOW() AS DATE) > CAST(modified AS DATE), "
+        "0, failures_since_last_login_today), "
+        "failures_since_last_login_today = "
+        "IF(@secret = @input_secret, 0, failures_since_last_login_today + 1) "
+        "WHERE id = @id; "
+        "END IF; "
+        "SELECT IF(@secret = @input_secret, @id, NULL) AS id;"
+        "END"
     )
     list_sql.append(sql)
     sql = (
