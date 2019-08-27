@@ -73,27 +73,6 @@ QLineEdit#search_tenant{
     font-size:14px;
 }
 
-QPushButton#fold_button{
-    border:0px;
-    background-image:url(images/arrow_down.png);
-    background-position:center;
-    background-repeat:none;
-}
-
-QLabel#group_name{
-    padding-left:10px;
-    font-size:14px;
-    font-family:"微软雅黑";
-    font-weight:bold;
-}
-
-QLabel#tenant{
-    margin-bottom:10px;
-    padding-left:40px;
-    font-family:"微软雅黑";
-    font-size:14px;
-}
-
 QWidget#bottom{
     border-bottom-left-radius:5px;
     border-bottom-right-radius:5px;
@@ -132,4 +111,17 @@ QPushButton#tab{
 QPushButton#tab:checked{
     border:None;
     border-bottom:2px solid red;
+}
+
+QLabel#message{
+    border:None;
+    background:rgba(255, 204, 153, 30%);
+    font-size:12px;
+    font-family:"微软雅黑";
+}
+
+QTreeWidget{
+    font-size:14px;
+    font-family:"微软雅黑";
+    border:None;
 }

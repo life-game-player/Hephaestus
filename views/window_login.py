@@ -2,7 +2,6 @@ from views.window_main import WindowMain
 
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
-import rpyc
 
 from qss.qss_setter import QSSSetter
 
@@ -11,7 +10,7 @@ import logging.handlers
 
 
 class WindowLogin(QtWidgets.QWidget):
-    def __init__(self, session_id, screen_width, screen_height):
+    def __init__(self, session_id, service, screen_width, screen_height):
         super().__init__()
 
         self.session_id = session_id
@@ -58,15 +57,7 @@ class WindowLogin(QtWidgets.QWidget):
         self.setLayout(self.layout_main)
 
         # 连接服务
-        self.kos = None
-        try:
-            self.kos = rpyc.connect("localhost", 18861)
-        except Exception as e:
-            self.label_info.setText('服务器连接失败!')
-            logging.error(
-                "{} occured".format(type(e).__name__),
-                exc_info=True
-            )
+        self.kos = service
 
         # 设置样式
         QSSSetter.set_qss(self, __file__)
@@ -156,6 +147,10 @@ class WindowLogin(QtWidgets.QWidget):
         layout.addWidget(button_login)
         layout.addStretch(1)
 
+        # 测试
+        line_edit_account.setText('Bill Guo')
+        line_edit_passwd.setText('!QAZ2wsx')
+
         self.widget_body.setLayout(layout)
 
     def login(self, account, pwd):
@@ -163,11 +158,20 @@ class WindowLogin(QtWidgets.QWidget):
             if not (account and pwd):
                 self.label_info.setText('用户名和密码不能为空!')
             else:
-                token = self.kos.root.login(self.session_id, account, pwd)
+                token = None
+                try:
+                    token = self.kos.root.login(self.session_id, account, pwd)
+                except Exception as e:
+                    self.label_info.setText('服务器连接失败!')
+                    logging.error(
+                        "{} occured".format(type(e).__name__),
+                        exc_info=True
+                    )
+                    return
                 if token:
                     # 登录成功
                     self.close()
-                    window_main = WindowMain(self.session_id, token)
+                    window_main = WindowMain(self.session_id, token, self.kos)
                     window_main.show()
                 else:
                     # 登录失败

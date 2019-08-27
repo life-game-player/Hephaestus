@@ -11,7 +11,7 @@ import logging.handlers
 
 
 class WindowMain(QtWidgets.QWidget):
-    def __init__(self, session_id, token):
+    def __init__(self, session_id, token, service):
         super().__init__()
 
         self.session_id = session_id
@@ -33,14 +33,7 @@ class WindowMain(QtWidgets.QWidget):
         logger.setLevel(logging.DEBUG)
 
         # 连接服务
-        self.kos = None
-        try:
-            self.kos = rpyc.connect("localhost", 18861)
-        except Exception as e:
-            logging.error(
-                "{} occured".format(type(e).__name__),
-                exc_info=True
-            )
+        self.kos = service
 
         # 公用标记
         self.tab = 'tenants'
@@ -164,7 +157,16 @@ class WindowMain(QtWidgets.QWidget):
         listview_combobox.setObjectName('env_list')
         combobox_env.setView(listview_combobox)
         if self.kos:
-            combobox_env.addItems(self.kos.root.get_environments())
+            try:
+                combobox_env.addItems(self.kos.root.get_environments())
+            except Exception as e:
+                self.show_message('服务器连接失败!')
+                logging.error(
+                    "{} occured".format(type(e).__name__),
+                    exc_info=True
+                )
+        else:
+            self.show_message('服务器连接失败!')
         combobox_env.setObjectName('env')
         combobox_env.setFixedSize(self.window_min_width, 30)
         label_search = QtWidgets.QLabel()
@@ -174,20 +176,6 @@ class WindowMain(QtWidgets.QWidget):
         lineedit_search.setPlaceholderText('搜索')
         lineedit_search.setObjectName('search_tenant')
         lineedit_search.setFixedSize(self.window_min_width - 30, 30)
-
-        # 常用商户分组
-        button_fold_favourites = QtWidgets.QPushButton()
-        button_fold_favourites.setObjectName('fold_button')
-        button_fold_favourites.setFixedSize(30, 30)
-        label_favourite = QtWidgets.QLabel('常用商户')
-        label_favourite.setObjectName('group_name')
-
-        # 所有商户分组
-        button_fold_all = QtWidgets.QPushButton()
-        button_fold_all.setObjectName('fold_button')
-        button_fold_all.setFixedSize(30, 30)
-        label_all = QtWidgets.QLabel('所有商户')
-        label_all.setObjectName('group_name')
 
         # Tab切换
         self.frame_tenants = QtWidgets.QFrame()
@@ -234,53 +222,65 @@ class WindowMain(QtWidgets.QWidget):
         layout.addLayout(layout_h)
         layout.addLayout(layout_tab)
 
-        frame_favourite_tenants = QtWidgets.QFrame()
-        layout_favourite_tenants = QtWidgets.QVBoxLayout()
-        button_fold_favourites.clicked.connect(
-            lambda: self.fold_frame(
-                frame_favourite_tenants, button_fold_favourites)
+        # 常用商户
+        tree_tenants = QtWidgets.QTreeWidget()
+        tree_tenants.setObjectName('tenants')
+        tree_tenants.setMinimumSize(self.window_min_width, 550 - 30 - 30 - 40)
+        size_policy_tree_tenants = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed,
+            QtWidgets.QSizePolicy.Expanding
         )
-        layout_favourite_tenants.setSpacing(0)
-        layout_favourite_tenants.setContentsMargins(0, 10, 0, 0)
-        layout_favourite_group = QtWidgets.QHBoxLayout()
-        layout_favourite_group.setSpacing(0)
-        layout_favourite_group.setContentsMargins(0, 0, 0, 0)
-        layout_favourite_group.addWidget(button_fold_favourites)
-        layout_favourite_group.addWidget(label_favourite)
-        for i in range(5):
-            label_tenant = QtWidgets.QLabel('商户{}'.format(i))
-            label_tenant.setObjectName('tenant')
-            label_tenant.setFixedSize(self.window_min_width, 30)
-            layout_favourite_tenants.addWidget(label_tenant)
-        frame_favourite_tenants.setLayout(layout_favourite_tenants)
-        layout_tenants.addLayout(layout_favourite_group)
-        layout_tenants.addWidget(frame_favourite_tenants)
+        tree_tenants.setSizePolicy(size_policy_tree_tenants)
+        tree_tenants.header().hide()
+        item_root_favourite_tenants = QtWidgets.QTreeWidgetItem(
+            tree_tenants)
+        item_root_favourite_tenants.setText(0, '常用商户')
+        item_root_favourite_tenants.setFont(
+            0,
+            QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
+        )
+        for i in range(100):
+            item_favourite_tenants = QtWidgets.QTreeWidgetItem()
+            item_favourite_tenants.setText(0, '商户{}'.format(i))
+            item_favourite_tenants.setToolTip(0, '商户{}'.format(i))
+            item_root_favourite_tenants.addChild(item_favourite_tenants)
 
-        frame_all_tenants = QtWidgets.QFrame()
-        layout_all_tenants = QtWidgets.QVBoxLayout()
-        button_fold_all.clicked.connect(
-            lambda: self.fold_frame(frame_all_tenants, button_fold_all)
+        # 所有商户
+        item_root_all_tenants = QtWidgets.QTreeWidgetItem(
+            tree_tenants)
+        item_root_all_tenants.setText(0, '所有商户')
+        item_root_all_tenants.setFont(
+            0,
+            QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
         )
-        layout_all_tenants.setSpacing(0)
-        layout_all_tenants.setContentsMargins(0, 10, 0, 0)
-        layout_all_group = QtWidgets.QHBoxLayout()
-        layout_all_group.setSpacing(0)
-        layout_all_group.setContentsMargins(0, 0, 0, 0)
-        layout_all_group.addWidget(button_fold_all)
-        layout_all_group.addWidget(label_all)
         for i in range(5):
-            label_tenant = QtWidgets.QLabel('商户{}'.format(i))
-            label_tenant.setObjectName('tenant')
-            label_tenant.setFixedSize(self.window_min_width, 30)
-            layout_all_tenants.addWidget(label_tenant)
-        frame_all_tenants.setLayout(layout_all_tenants)
-        layout_tenants.addLayout(layout_all_group)
-        layout_tenants.addWidget(frame_all_tenants)
-        layout_tenants.addStretch()
+            item_all_tenants = QtWidgets.QTreeWidgetItem()
+            item_all_tenants.setText(0, '商户{}'.format(i))
+            item_all_tenants.setToolTip(0, '商户{}'.format(i))
+            item_root_all_tenants.addChild(item_all_tenants)
+        layout_tenants.addWidget(tree_tenants)
+
+        '''
+        layout_scroll_tenants = QtWidgets.QVBoxLayout()
+        scroll_tenants = QtWidgets.QScrollArea()
+        scroll_tenants.setLayout(layout_tenants)
+        scroll_tenants.setWidgetResizable(True)
+        layout_scroll_tenants.addWidget(scroll_tenants)
+        self.frame_tenants.setLayout(layout_scroll_tenants)
+        '''
+
         self.frame_tenants.setLayout(layout_tenants)
+
+        self.label_message = QtWidgets.QLabel()
+        self.label_message.setFixedSize(self.window_min_width, 20)
+        self.label_message.setObjectName('message')
+        self.label_message.setAlignment(QtCore.Qt.AlignCenter)
 
         layout.addWidget(self.frame_tenants)
         layout.addWidget(self.frame_tools)
+        layout.addStretch()
+        layout.addWidget(self.label_message)
+        self.label_message.setVisible(False)
         self.widget_body.setLayout(layout)
 
     def set_bottom_widget(self):
@@ -302,20 +302,6 @@ class WindowMain(QtWidgets.QWidget):
         layout.addWidget(button_setting)
         layout.addStretch()
         self.widget_bottom.setLayout(layout)
-
-    def fold_frame(self, frame, button):
-        if frame.isHidden():
-            # 展开
-            button.setStyleSheet(
-                'QPushButton{background-image:url(images/arrow_down.png);}'
-            )
-            frame.show()
-        else:
-            # 收起
-            button.setStyleSheet(
-                'QPushButton{background-image:url(images/arrow_right.png);}'
-            )
-            frame.hide()
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -546,3 +532,7 @@ class WindowMain(QtWidgets.QWidget):
             self.frame_tenants.hide()
             self.frame_tools.show()
             self.tab = tab
+
+    def show_message(self, message):
+        self.label_message.setVisible(True)
+        self.label_message.setText('服务器连接失败')
