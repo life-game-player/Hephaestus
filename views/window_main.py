@@ -225,7 +225,9 @@ class WindowMain(QtWidgets.QWidget):
         # 常用商户
         tree_tenants = QtWidgets.QTreeWidget()
         tree_tenants.setObjectName('tenants')
-        tree_tenants.setMinimumSize(self.window_min_width, 550 - 30 - 30 - 40)
+        tree_tenants.setMinimumSize(
+            self.window_min_width, 550 - 30 - 30 - 40 - 10
+        )
         size_policy_tree_tenants = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Fixed,
             QtWidgets.QSizePolicy.Expanding
@@ -278,7 +280,6 @@ class WindowMain(QtWidgets.QWidget):
 
         layout.addWidget(self.frame_tenants)
         layout.addWidget(self.frame_tools)
-        layout.addStretch()
         layout.addWidget(self.label_message)
         self.label_message.setVisible(False)
         self.widget_body.setLayout(layout)
