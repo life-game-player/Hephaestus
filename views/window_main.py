@@ -97,7 +97,7 @@ class WindowMain(QtWidgets.QWidget):
         button_min_window.setObjectName('button_min_window')
         button_min_window.setFixedSize(25, 25)
         button_close_window = QtWidgets.QPushButton()
-        button_close_window.clicked.connect(QtWidgets.qApp.quit)
+        button_close_window.clicked.connect(self.close_main)
         button_close_window.setFixedSize(25, 25)
         button_close_window.setObjectName('button_close_window')
 
@@ -536,4 +536,15 @@ class WindowMain(QtWidgets.QWidget):
 
     def show_message(self, message):
         self.label_message.setVisible(True)
-        self.label_message.setText('服务器连接失败')
+        self.label_message.setText(message)
+
+    def close_main(self):
+        if self.kos:
+            try:
+                self.kos.root.logout(self.session_id)
+            except Exception as e:
+                logging.error(
+                    "{} occured".format(type(e).__name__),
+                    exc_info=True
+                )
+        QtWidgets.qApp.quit()

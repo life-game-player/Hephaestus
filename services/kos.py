@@ -1,6 +1,7 @@
 import logging
 import logging.handlers
 import uuid
+import datetime
 
 import rpyc
 
@@ -32,7 +33,7 @@ class Kos(rpyc.Service):
         self.passwd = passwd
 
     def on_connect(self, conn):
-        logging.debug(conn)
+        logging.debug(self.login_users)
 
     def on_disconnect(self, conn):
         pass
@@ -44,7 +45,16 @@ class Kos(rpyc.Service):
         user = users.login(self.host, self.user, self.passwd, user, passwd)
         if user and user[0]:
             token = str(uuid.uuid4())
-            self.login_users[(session_id, token)] = user[0]
+            expired = datetime.datetime.now() + datetime.timedelta(minutes=30)
+            self.login_users[session_id] = {
+                'id': user[0],
+                'token': token,
+                'expired': expired
+            }
             return token
         else:
             return None
+
+    def exposed_logout(self, session_id):
+        removed = self.login_users.pop(session_id, None)
+        return removed
