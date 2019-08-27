@@ -2,6 +2,8 @@ import logging
 import logging.handlers
 import uuid
 import datetime
+import time
+import threading
 
 import rpyc
 
@@ -31,12 +33,26 @@ class Kos(rpyc.Service):
         self.host = host
         self.user = user
         self.passwd = passwd
+        self.session_period = 30
+
+        thread_cleaning = threading.Thread(
+            target=self.clear_session, daemon=True
+        )
+        thread_cleaning.start()
 
     def on_connect(self, conn):
-        logging.debug(self.login_users)
+        pass
 
     def on_disconnect(self, conn):
         pass
+
+    def clear_session(self):
+        while True:
+            datetime_now = datetime.datetime.now()
+            for k, v in list(self.login_users.items()):
+                if v['expired'] < datetime_now:
+                    del self.login_users[k]
+            time.sleep(self.session_period)
 
     def exposed_get_environments(self):
         return ['开发环境', '测试环境', '生产环境']
@@ -45,7 +61,8 @@ class Kos(rpyc.Service):
         user = users.login(self.host, self.user, self.passwd, user, passwd)
         if user and user[0]:
             token = str(uuid.uuid4())
-            expired = datetime.datetime.now() + datetime.timedelta(minutes=30)
+            expired = datetime.datetime.now() +\
+                datetime.timedelta(seconds=self.session_period)
             self.login_users[session_id] = {
                 'id': user[0],
                 'token': token,

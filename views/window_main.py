@@ -222,45 +222,49 @@ class WindowMain(QtWidgets.QWidget):
         layout.addLayout(layout_h)
         layout.addLayout(layout_tab)
 
-        # 常用商户
-        tree_tenants = QtWidgets.QTreeWidget()
-        tree_tenants.setObjectName('tenants')
-        tree_tenants.setMinimumSize(
-            self.window_min_width, 550 - 30 - 30 - 40 - 10
+        # 商户信息
+        self.tree_tenants = QtWidgets.QTreeWidget()
+        self.tree_tenants.setObjectName('tenants')
+        self.tree_tenants.setMinimumSize(
+            self.window_min_width, 550 - 30 - 30 - 40 - 30
         )
         size_policy_tree_tenants = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Fixed,
             QtWidgets.QSizePolicy.Expanding
         )
-        tree_tenants.setSizePolicy(size_policy_tree_tenants)
-        tree_tenants.header().hide()
-        item_root_favourite_tenants = QtWidgets.QTreeWidgetItem(
-            tree_tenants)
-        item_root_favourite_tenants.setText(0, '常用商户')
-        item_root_favourite_tenants.setFont(
+        self.tree_tenants.setSizePolicy(size_policy_tree_tenants)
+        self.tree_tenants.header().hide()
+        
+        self.item_root_favourite_tenants = QtWidgets.QTreeWidgetItem(
+            self.tree_tenants)
+        self.item_root_favourite_tenants.setText(0, '常用商户')
+        self.item_root_favourite_tenants.setFont(
             0,
             QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
         )
-        for i in range(100):
-            item_favourite_tenants = QtWidgets.QTreeWidgetItem()
-            item_favourite_tenants.setText(0, '商户{}'.format(i))
-            item_favourite_tenants.setToolTip(0, '商户{}'.format(i))
-            item_root_favourite_tenants.addChild(item_favourite_tenants)
 
-        # 所有商户
-        item_root_all_tenants = QtWidgets.QTreeWidgetItem(
-            tree_tenants)
-        item_root_all_tenants.setText(0, '所有商户')
-        item_root_all_tenants.setFont(
+        self.item_root_all_tenants = QtWidgets.QTreeWidgetItem(
+            self.tree_tenants)
+        self.item_root_all_tenants.setText(0, '所有商户')
+        self.item_root_all_tenants.setFont(
             0,
             QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
         )
-        for i in range(5):
-            item_all_tenants = QtWidgets.QTreeWidgetItem()
-            item_all_tenants.setText(0, '商户{}'.format(i))
-            item_all_tenants.setToolTip(0, '商户{}'.format(i))
-            item_root_all_tenants.addChild(item_all_tenants)
-        layout_tenants.addWidget(tree_tenants)
+
+        self.refresh_tenants()
+
+        # 商户刷新按钮
+        button_refresh = QtWidgets.QPushButton()
+        button_refresh.setObjectName('refresh')
+        button_refresh.setFixedSize(20, 20)
+        button_refresh.clicked.connect(self.refresh_tenants)
+
+        layout_refresh_tenant = QtWidgets.QHBoxLayout()
+        layout_refresh_tenant.addStretch(30)
+        layout_refresh_tenant.addWidget(button_refresh)
+        layout_refresh_tenant.addStretch(1)
+        layout_tenants.addLayout(layout_refresh_tenant)
+        layout_tenants.addWidget(self.tree_tenants)
 
         '''
         layout_scroll_tenants = QtWidgets.QVBoxLayout()
@@ -548,3 +552,18 @@ class WindowMain(QtWidgets.QWidget):
                     exc_info=True
                 )
         QtWidgets.qApp.quit()
+
+    def refresh_tenants(self):
+        self.item_root_favourite_tenants.takeChildren()
+        for i in range(10):
+            item_favourite_tenants = QtWidgets.QTreeWidgetItem()
+            item_favourite_tenants.setText(0, '商户{}'.format(i))
+            item_favourite_tenants.setToolTip(0, '商户{}'.format(i))
+            self.item_root_favourite_tenants.addChild(item_favourite_tenants)
+
+        self.item_root_all_tenants.takeChildren()
+        for i in range(20):
+            item_all_tenants = QtWidgets.QTreeWidgetItem()
+            item_all_tenants.setText(0, '商户{}'.format(i))
+            item_all_tenants.setToolTip(0, '商户{}'.format(i))
+            self.item_root_all_tenants.addChild(item_all_tenants)
