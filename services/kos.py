@@ -33,7 +33,7 @@ class Kos(rpyc.Service):
         self.host = host
         self.user = user
         self.passwd = passwd
-        self.session_period = 30
+        self.session_period = 10  # session过期时间(秒)
 
         thread_cleaning = threading.Thread(
             target=self.clear_session, daemon=True
@@ -75,3 +75,21 @@ class Kos(rpyc.Service):
     def exposed_logout(self, session_id):
         removed = self.login_users.pop(session_id, None)
         return removed
+
+    def exposed_get_tenants(self, session_id, token, count=None):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            tenants = list()
+            if count:
+                for i in range(count):
+                    tenants.append({'name': '商户{}'.format(i)})
+            else:
+                for i in range(30):
+                    tenants.append({'name': '商户{}'.format(i)})
+            return tenants
+        else:
+            # token失效
+            return -1

@@ -10,10 +10,14 @@ import logging.handlers
 
 
 class WindowLogin(QtWidgets.QWidget):
-    def __init__(self, session_id, service, screen_width, screen_height):
+    def __init__(
+        self, session_id, service,
+        screen_width=None, screen_height=None
+    ):
         super().__init__()
 
         self.session_id = session_id
+        self.window_main = None
 
         # 日志设置
         logging_handler = logging.handlers.RotatingFileHandler(
@@ -36,7 +40,8 @@ class WindowLogin(QtWidgets.QWidget):
 
         # 设置窗口无边框
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint
+            QtCore.Qt.FramelessWindowHint |
+            QtCore.Qt.WindowStaysOnTopHint
         )
 
         # 设置窗口背景透明
@@ -170,9 +175,15 @@ class WindowLogin(QtWidgets.QWidget):
                     return
                 if token:
                     # 登录成功
-                    self.close()
-                    window_main = WindowMain(self.session_id, token, self.kos)
-                    window_main.show()
+                    self.hide()
+                    if self.window_main:
+                        self.window_main.renew_token(token)
+                        self.window_main.setEnabled(True)
+                    else:
+                        self.window_main = WindowMain(
+                            self.session_id, token, self.kos, self
+                        )
+                        self.window_main.show()
                 else:
                     # 登录失败
                     self.label_info.setText('用户名密码不正确!')

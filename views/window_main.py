@@ -2,7 +2,6 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtGui import QCursor
-import rpyc
 
 from qss.qss_setter import QSSSetter
 
@@ -11,10 +10,12 @@ import logging.handlers
 
 
 class WindowMain(QtWidgets.QWidget):
-    def __init__(self, session_id, token, service):
+    def __init__(self, session_id, token, service, login_window):
         super().__init__()
 
         self.session_id = session_id
+        self.token = token
+        self.login_window = login_window
 
         # 日志设置
         logging_handler = logging.handlers.RotatingFileHandler(
@@ -251,8 +252,6 @@ class WindowMain(QtWidgets.QWidget):
             QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
         )
 
-        self.refresh_tenants()
-
         # 商户刷新按钮
         button_refresh = QtWidgets.QPushButton()
         button_refresh.setObjectName('refresh')
@@ -281,6 +280,8 @@ class WindowMain(QtWidgets.QWidget):
         self.label_message.setFixedSize(self.window_min_width, 20)
         self.label_message.setObjectName('message')
         self.label_message.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.refresh_tenants()  # 加载商户信息
 
         layout.addWidget(self.frame_tenants)
         layout.addWidget(self.frame_tools)
@@ -555,15 +556,43 @@ class WindowMain(QtWidgets.QWidget):
 
     def refresh_tenants(self):
         self.item_root_favourite_tenants.takeChildren()
-        for i in range(10):
-            item_favourite_tenants = QtWidgets.QTreeWidgetItem()
-            item_favourite_tenants.setText(0, '商户{}'.format(i))
-            item_favourite_tenants.setToolTip(0, '商户{}'.format(i))
-            self.item_root_favourite_tenants.addChild(item_favourite_tenants)
-
         self.item_root_all_tenants.takeChildren()
-        for i in range(20):
-            item_all_tenants = QtWidgets.QTreeWidgetItem()
-            item_all_tenants.setText(0, '商户{}'.format(i))
-            item_all_tenants.setToolTip(0, '商户{}'.format(i))
-            self.item_root_all_tenants.addChild(item_all_tenants)
+        if self.kos:
+            try:
+                favourite_tenants = self.kos.root.get_tenants(
+                    self.session_id, self.token, 10
+                )
+                all_tenants = self.kos.root.get_tenants(
+                    self.session_id, self.token
+                )
+                if (
+                    isinstance(favourite_tenants, list) and
+                    isinstance(all_tenants, list)
+                ):
+                    for t in favourite_tenants:
+                        item_favourite_tenants = QtWidgets.QTreeWidgetItem()
+                        item_favourite_tenants.setText(0, t['name'])
+                        item_favourite_tenants.setToolTip(0, t['name'])
+                        self.item_root_favourite_tenants.addChild(
+                            item_favourite_tenants
+                        )
+                    for t in all_tenants:
+                        item_all_tenants = QtWidgets.QTreeWidgetItem()
+                        item_all_tenants.setText(0, t['name'])
+                        item_all_tenants.setToolTip(0, t['name'])
+                        self.item_root_all_tenants.addChild(item_all_tenants)
+                else:
+                    # 锁定界面，要求重新登录
+                    self.setEnabled(False)
+                    self.login_window.show()
+            except Exception as e:
+                self.show_message('服务器连接失败!')
+                logging.error(
+                    "{} occured".format(type(e).__name__),
+                    exc_info=True
+                )
+        else:
+            self.show_message('服务器连接失败!')
+
+    def renew_token(self, token):
+        self.token = token
