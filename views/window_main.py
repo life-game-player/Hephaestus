@@ -4,6 +4,7 @@ from PyQt5 import QtGui
 from PyQt5.QtGui import QCursor
 
 from qss.qss_setter import QSSSetter
+from models.tenant import Tenant
 
 import logging
 import logging.handlers
@@ -16,6 +17,7 @@ class WindowMain(QtWidgets.QWidget):
         self.session_id = session_id
         self.token = token
         self.login_window = login_window
+        self.tenants = dict()
 
         # 日志设置
         logging_handler = logging.handlers.RotatingFileHandler(
@@ -225,6 +227,9 @@ class WindowMain(QtWidgets.QWidget):
 
         # 商户信息
         self.tree_tenants = QtWidgets.QTreeWidget()
+        #self.tree_tenants.itemClicked.connect(self.show_tenant_details)
+        self.tree_tenants.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.tree_tenants.customContextMenuRequested.connect(self.show_tenant_menu)
         self.tree_tenants.setObjectName('tenants')
         self.tree_tenants.setMinimumSize(
             self.window_min_width, 550 - 30 - 30 - 40 - 30
@@ -239,6 +244,7 @@ class WindowMain(QtWidgets.QWidget):
         self.item_root_favourite_tenants = QtWidgets.QTreeWidgetItem(
             self.tree_tenants)
         self.item_root_favourite_tenants.setText(0, '常用商户')
+        self.tenants['常用商户'] = list()
         self.item_root_favourite_tenants.setFont(
             0,
             QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
@@ -247,6 +253,7 @@ class WindowMain(QtWidgets.QWidget):
         self.item_root_all_tenants = QtWidgets.QTreeWidgetItem(
             self.tree_tenants)
         self.item_root_all_tenants.setText(0, '所有商户')
+        self.tenants['所有商户'] = list()
         self.item_root_all_tenants.setFont(
             0,
             QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
@@ -310,10 +317,13 @@ class WindowMain(QtWidgets.QWidget):
             "} "
             "QMenu::item{"
             "background-color:transparent;"
-            "padding:8px 32px;"
-            "margin:0px 8px;"
+            "padding:8px 20px;"
+            "margin:0px 1px;"
             "font-size:12px;"
             "font-family:\"微软雅黑\";"
+            "} "
+            "QMenu::item::selected{"
+            "background-color:rgba(192,192,192,50%)"
             "}"
         )
         menu_users = self.menu_setting.addMenu('用户管理')
@@ -577,6 +587,8 @@ class WindowMain(QtWidgets.QWidget):
     def refresh_tenants(self):
         self.item_root_favourite_tenants.takeChildren()
         self.item_root_all_tenants.takeChildren()
+        self.tenants['常用商户'].clear()
+        self.tenants['所有商户'].clear()
         if self.kos:
             try:
                 favourite_tenants = self.kos.root.get_tenants(
@@ -596,11 +608,13 @@ class WindowMain(QtWidgets.QWidget):
                         self.item_root_favourite_tenants.addChild(
                             item_favourite_tenants
                         )
+                        self.tenants['常用商户'].append(Tenant(t['id'], t['name']))
                     for t in all_tenants:
                         item_all_tenants = QtWidgets.QTreeWidgetItem()
                         item_all_tenants.setText(0, t['name'])
                         item_all_tenants.setToolTip(0, t['name'])
                         self.item_root_all_tenants.addChild(item_all_tenants)
+                        self.tenants['所有商户'].append(Tenant(t['id'], t['name']))
                 else:
                     # 锁定界面，要求重新登录
                     self.setEnabled(False)
@@ -626,3 +640,44 @@ class WindowMain(QtWidgets.QWidget):
         self.menu_setting.exec(
             self.button_setting.mapToGlobal(pos)
         )
+
+    def show_tenant_menu(self, pos):
+        selected_items = self.tree_tenants.selectedItems()
+        if selected_items:
+            selected_item = selected_items[0]
+            parent = selected_item.parent()
+            if parent:
+                # 排除一级节点
+                group = parent.text(0)
+                index = parent.indexOfChild(selected_item)
+                curr_tenant = self.tenants[group][index]
+                menu_tenant = QtWidgets.QMenu()
+                menu_list = menu_tenant.addMenu('内容列表')
+                menu_workflow = menu_tenant.addMenu('流程管理')
+                menu_list.addAction('完全删除')
+                menu_list.addAction('数据清理')
+                menu_list.addAction('重置ES数据')
+                menu_list.addAction('重置GP数据')
+                menu_list.addAction('重建索引')
+                menu_workflow.addAction('删除流程')
+                menu_workflow.addAction('清理数据')
+                menu_report = menu_workflow.addMenu('流程报表')
+                menu_report.addAction('重建索引')
+                menu_workflow.addAction('流程修复')
+                menu_tenant.setStyleSheet(
+                    "QMenu::item{"
+                    "background-color:transparent;"
+                    "padding:8px 20px;"
+                    "margin:0px 1px;"
+                    "font-size:12px;"
+                    "font-family:\"微软雅黑\";"
+                    "} "
+                    "QMenu::item::selected{"
+                    "background-color:rgba(192,192,192,50%)"
+                    "}"
+                )
+                print('ID: {}, Name: {}'.format(curr_tenant.id, curr_tenant.name))
+                menu_tenant.exec(self.tree_tenants.mapToGlobal(pos))
+            elif selected_item.text(0) == '所有商户':
+                # 所有商户的操作菜单
+                pass

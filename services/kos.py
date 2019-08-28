@@ -85,10 +85,14 @@ class Kos(rpyc.Service):
             tenants = list()
             if count:
                 for i in range(count):
-                    tenants.append({'name': '商户{}'.format(i)})
+                    tenants.append(
+                        {'id': i, 'name': '商户{}'.format(i)}
+                    )
             else:
                 for i in range(30):
-                    tenants.append({'name': '商户{}'.format(i)})
+                    tenants.append(
+                        {'id': i, 'name': '商户{}'.format(i)}
+                    )
             return tenants
         else:
             # token失效
