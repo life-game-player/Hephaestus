@@ -235,7 +235,7 @@ class WindowMain(QtWidgets.QWidget):
         )
         self.tree_tenants.setSizePolicy(size_policy_tree_tenants)
         self.tree_tenants.header().hide()
-        
+
         self.item_root_favourite_tenants = QtWidgets.QTreeWidgetItem(
             self.tree_tenants)
         self.item_root_favourite_tenants.setText(0, '常用商户')
@@ -296,16 +296,36 @@ class WindowMain(QtWidgets.QWidget):
         self.widget_bottom.setFixedSize(self.window_min_width, 45)
 
         # 设置按钮
-        button_setting = QtWidgets.QPushButton('管理')
-        button_setting.setIcon(QtGui.QIcon('images/settings.png'))
-        button_setting.setIconSize(QtCore.QSize(30, 30))
-        button_setting.setObjectName('settings')
-        #button_setting.setFixedSize(45, 45)
+        self.button_setting = QtWidgets.QPushButton('管理')
+        self.button_setting.setIcon(QtGui.QIcon('images/settings.png'))
+        self.button_setting.setIconSize(QtCore.QSize(30, 30))
+        self.button_setting.setObjectName('settings')
+        self.button_setting.clicked.connect(self.popup_menu_settings)
+        self.menu_setting = QtWidgets.QMenu()
+        self.menu_setting.setStyleSheet(
+            "QMenu{"
+            "background-color:qlineargradient("
+            "spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(255,153,102),"
+            "stop:1 rgb(255,255,255));"
+            "} "
+            "QMenu::item{"
+            "background-color:transparent;"
+            "padding:8px 32px;"
+            "margin:0px 8px;"
+            "font-size:12px;"
+            "font-family:\"微软雅黑\";"
+            "}"
+        )
+        menu_users = self.menu_setting.addMenu('用户管理')
+        menu_users.addAction('用户创建')
+        menu_users.addAction('用户修改')
+        self.menu_setting.addAction('环境配置')
+        self.menu_setting.addAction('历史审查')
 
         layout = QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(button_setting)
+        layout.addWidget(self.button_setting)
         layout.addStretch()
         self.widget_bottom.setLayout(layout)
 
@@ -596,3 +616,13 @@ class WindowMain(QtWidgets.QWidget):
 
     def renew_token(self, token):
         self.token = token
+
+    def popup_menu_settings(self):
+        pos = QtCore.QPoint()
+        pos.setX(0)
+        pos.setY(
+            -105
+        )
+        self.menu_setting.exec(
+            self.button_setting.mapToGlobal(pos)
+        )
