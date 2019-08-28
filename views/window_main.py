@@ -229,7 +229,9 @@ class WindowMain(QtWidgets.QWidget):
         self.tree_tenants = QtWidgets.QTreeWidget()
         #self.tree_tenants.itemClicked.connect(self.show_tenant_details)
         self.tree_tenants.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.tree_tenants.customContextMenuRequested.connect(self.show_tenant_menu)
+        self.tree_tenants.customContextMenuRequested.connect(
+            self.show_tenant_menu
+        )
         self.tree_tenants.setObjectName('tenants')
         self.tree_tenants.setMinimumSize(
             self.window_min_width, 550 - 30 - 30 - 40 - 30
@@ -259,17 +261,6 @@ class WindowMain(QtWidgets.QWidget):
             QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
         )
 
-        # 商户刷新按钮
-        button_refresh = QtWidgets.QPushButton()
-        button_refresh.setObjectName('refresh')
-        button_refresh.setFixedSize(20, 20)
-        button_refresh.clicked.connect(self.refresh_tenants)
-
-        layout_refresh_tenant = QtWidgets.QHBoxLayout()
-        layout_refresh_tenant.addStretch(30)
-        layout_refresh_tenant.addWidget(button_refresh)
-        layout_refresh_tenant.addStretch(1)
-        layout_tenants.addLayout(layout_refresh_tenant)
         layout_tenants.addWidget(self.tree_tenants)
 
         '''
@@ -680,4 +671,18 @@ class WindowMain(QtWidgets.QWidget):
                 menu_tenant.exec(self.tree_tenants.mapToGlobal(pos))
             elif selected_item.text(0) == '所有商户':
                 # 所有商户的操作菜单
-                pass
+                menu_tenant_group = QtWidgets.QMenu()
+                menu_tenant_group.addAction('刷新', self.refresh_tenants)
+                menu_tenant_group.setStyleSheet(
+                    "QMenu::item{"
+                    "background-color:transparent;"
+                    "padding:4px 10px;"
+                    "margin:0px 1px;"
+                    "font-size:12px;"
+                    "font-family:\"微软雅黑\";"
+                    "} "
+                    "QMenu::item::selected{"
+                    "background-color:rgba(192,192,192,50%)"
+                    "}"
+                )
+                menu_tenant_group.exec(self.tree_tenants.mapToGlobal(pos))

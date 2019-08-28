@@ -124,13 +124,9 @@ QTreeWidget{
     font-size:14px;
     font-family:"微软雅黑";
     border:None;
+    margin-top:10px;
 }
 
 QTreeWidget::item{
     height:25px;
-}
-
-QPushButton#refresh{
-    border-image:url(images/refresh.png);
-    border:None;
 }
