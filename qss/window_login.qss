@@ -22,12 +22,16 @@ QPushButton#button_close_window:hover{
     background-color:rgb(255, 0, 0);
 }
 
-QWidget#head{
-    background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 rgb(202,12,22),stop:1 rgb(255, 204, 204));
+QWidget#head_up{
+    background:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:0.5,stop:0 rgb(202,12,22),stop:1 rgb(255,102,51));
+}
+
+QWidget#head_down{
+    background:white;
 }
 
 QWidget#body{
-    background-color:rgb(255, 204, 204);
+    background-color:rgba(255, 255, 255, 100%);
     border-bottom-left-radius:5px;
     border-bottom-right-radius:5px;
 }
@@ -53,13 +57,13 @@ QPushButton#login{
     border-radius:5px;
     margin-left:5px;
     margin-right:5px;
-    background-color:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 rgb(255,102,102),stop:1 rgb(255,102,102));
+    background-color:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 rgb(255,102,51),stop:1 rgb(255,102,51));
     border:1px solid red;
 }
 
 QLabel#user_photo{
     background-color:gray;
-    border-radius:50px;
+    border-radius:10px;
 }
 
 QLabel#info{

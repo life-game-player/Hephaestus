@@ -36,7 +36,7 @@ class WindowLogin(QtWidgets.QWidget):
         logger.setLevel(logging.DEBUG)
 
         # 设置窗口大小
-        self.setFixedSize(400, 300)
+        self.setFixedSize(400, 350)
 
         # 设置窗口无边框
         self.setWindowFlags(
@@ -97,21 +97,26 @@ class WindowLogin(QtWidgets.QWidget):
     def set_head_widget(self):
         self.widget_head = QtWidgets.QWidget()
         self.widget_head.setObjectName('head')
-        self.widget_head.setFixedSize(400, 100)
+        self.widget_head.setFixedSize(400, 150)
 
         # 用户头像
-        label_photo = QtWidgets.QLabel()
+        label_photo = QtWidgets.QLabel(self.widget_head)
         label_photo.setFixedSize(100, 100)
         label_photo.setObjectName('user_photo')
 
         # 布局
-        layout = QtWidgets.QVBoxLayout()
-        layout.setSpacing(0)
-        layout.setContentsMargins(160, 0, 0, 0)
-        layout.addStretch(1)
-        layout.addWidget(label_photo)
+        widget_head_up = QtWidgets.QLabel(self.widget_head)
+        widget_head_up.setObjectName('head_up')
+        widget_head_up.lower()
+        widget_head_down = QtWidgets.QLabel(self.widget_head)
+        widget_head_down.setObjectName('head_down')
+        widget_head_down.lower()
+        widget_head_up.setGeometry(0, 0, 400, 100)
+        widget_head_down.setGeometry(0, 100, 400, 50)
+        label_photo.setGeometry(150, 50, 100, 100)
 
-        self.widget_head.setLayout(layout)
+        #widget_head_up.lower()
+        #widget_head_down.lower()
 
     def set_body_widget(self):
         self.widget_body = QtWidgets.QWidget()

@@ -320,7 +320,7 @@ class WindowMain(QtWidgets.QWidget):
         menu_users = self.menu_setting.addMenu('用户管理')
         menu_users.addAction('用户创建')
         menu_users.addAction('用户修改')
-        self.menu_setting.addAction('环境配置')
+        self.menu_setting.addAction('环境配置', self.show_config_window)
         self.menu_setting.addAction('历史审查')
 
         layout = QtWidgets.QHBoxLayout()
@@ -686,3 +686,6 @@ class WindowMain(QtWidgets.QWidget):
                     "}"
                 )
                 menu_tenant_group.exec(self.tree_tenants.mapToGlobal(pos))
+
+    def show_config_window(self):
+        pass
