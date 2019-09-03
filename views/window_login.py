@@ -4,9 +4,7 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 
 from qss.qss_setter import QSSSetter
-
-import logging
-import logging.handlers
+from clio import logger
 
 
 class WindowLogin(QtWidgets.QWidget):
@@ -18,22 +16,6 @@ class WindowLogin(QtWidgets.QWidget):
 
         self.session_id = session_id
         self.window_main = None
-
-        # 日志设置
-        logging_handler = logging.handlers.RotatingFileHandler(
-            'logs/login.log',
-            'a',
-            1024 * 1024,
-            10,
-            'utf-8'
-        )
-        logging_format = logging.Formatter(
-            '%(asctime)s [%(name)s - %(levelname)s] %(message)s'
-        )
-        logging_handler.setFormatter(logging_format)
-        logger = logging.getLogger()
-        logger.addHandler(logging_handler)
-        logger.setLevel(logging.DEBUG)
 
         # 设置窗口大小
         self.setFixedSize(400, 350)
@@ -173,7 +155,7 @@ class WindowLogin(QtWidgets.QWidget):
                     token = self.kos.root.login(self.session_id, account, pwd)
                 except Exception as e:
                     self.label_info.setText('服务器连接失败!')
-                    logging.error(
+                    logger.error(
                         "{} occured".format(type(e).__name__),
                         exc_info=True
                     )
@@ -183,7 +165,7 @@ class WindowLogin(QtWidgets.QWidget):
                     self.hide()
                     if self.window_main:
                         self.window_main.renew_token(token)
-                        self.window_main.setEnabled(True)
+                        self.window_main.set_enabled_cascade(True)
                     else:
                         self.window_main = WindowMain(
                             self.session_id, token, self.kos, self

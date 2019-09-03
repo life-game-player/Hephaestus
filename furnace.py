@@ -1,32 +1,15 @@
 import sys
 import uuid
-import logging
-import logging.handlers
 
 from PyQt5 import QtWidgets
 import rpyc
 
 from views.window_login import WindowLogin
+from clio import logger
 
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-
-    # 日志设置
-    logging_handler = logging.handlers.RotatingFileHandler(
-        'logs/furnace.log',
-        'a',
-        1024 * 1024,
-        10,
-        'utf-8'
-    )
-    logging_format = logging.Formatter(
-        '%(asctime)s [%(name)s - %(levelname)s] %(message)s'
-    )
-    logging_handler.setFormatter(logging_format)
-    logger = logging.getLogger()
-    logger.addHandler(logging_handler)
-    logger.setLevel(logging.DEBUG)
 
     # 获取屏幕大小
     screen_resolution = app.desktop().screenGeometry()
@@ -37,7 +20,7 @@ def main():
     try:
         kos = rpyc.connect("localhost", 18861)
     except Exception as e:
-        logging.error(
+        logger.error(
             "{} occured".format(type(e).__name__),
             exc_info=True
         )

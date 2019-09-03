@@ -1,5 +1,7 @@
 import pymysql
 
+from clio import logger
+
 
 def connect(host, user, password, db):
     return pymysql.connect(
@@ -29,7 +31,10 @@ def query(conn, sql):
             results = c.fetchall()
             return results
     except Exception as e:
-        raise e
+        logger.error(
+            "{} occured".format(type(e).__name__),
+            exc_info=True
+        )
     finally:
         conn.close()
 
@@ -44,7 +49,25 @@ def update(conn, list_sql):
         return results
     except Exception as e:
         conn.rollback()
-        raise e
+        logger.error(
+            "{} occured".format(type(e).__name__),
+            exc_info=True
+        )
+    finally:
+        conn.close()
+
+
+def execute(conn, sql, params):
+    try:
+        with conn.cursor() as c:
+            c.execute(sql, params)
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        logger.error(
+            "{} occured".format(type(e).__name__),
+            exc_info=True
+        )
     finally:
         conn.close()
 
@@ -105,6 +128,16 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
     )
     list_sql.append(sql)
     sql = (
+        "CREATE TABLE mnemosyne("
+        "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+        "operator BIGINT NOT NULL, "
+        "operation INT NOT NULL, "
+        "result INT NOT NULL, "
+        "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
+        ")"
+    )
+    list_sql.append(sql)
+    sql = (
         "CREATE UNIQUE INDEX UK_name "
         "ON gods(`name`)"
     )
@@ -112,6 +145,12 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
     sql = (
         "CREATE TABLE islands("
         "`name` VARCHAR(30) NOT NULL PRIMARY KEY, "
+        "read_host VARCHAR(255), "
+        "write_host VARCHAR(255) NOT NULL, "
+        "user VARCHAR(255) NOT NULL, "
+        "secret BLOB NOT NULL, "
+        "guid VARCHAR(100) NOT NULL, "
+        "vector BLOB NOT NULL, "
         "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
         "modified TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP "
         ")"
@@ -124,6 +163,28 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
         "access_level INT NOT NULL COMMENT '1: Tagrag, 2: Lord, 3: King', "
         "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
         ")"
+    )
+    list_sql.append(sql)
+    sql = (
+        "CREATE FUNCTION CBC_ENCRYPT"
+        "(_key VARCHAR(100), _plain VARCHAR(255), _vector BLOB) "
+        "RETURNS BLOB "
+        "BEGIN "
+        "SET block_encryption_mode = 'aes-256-cbc';"
+        "SET @key_str = SHA2(_key, 512);"
+        "RETURN AES_ENCRYPT(_plain, @key_str, _vector);"
+        "END"
+    )
+    list_sql.append(sql)
+    sql = (
+        "CREATE FUNCTION CBC_DECRYPT"
+        "(_key VARCHAR(100), _crypt BLOB, _vector BLOB) "
+        "RETURNS VARCHAR(255)"
+        "BEGIN "
+        "SET block_encryption_mode = 'aes-256-cbc';"
+        "SET @key_str = SHA2(_key, 512);"
+        "RETURN AES_DECRYPT(_crypt, @key_str, _vector);"
+        "END"
     )
     list_sql.append(sql)
     sql = (

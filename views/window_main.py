@@ -1,22 +1,25 @@
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
-from PyQt5.QtGui import QCursor
 
 from qss.qss_setter import QSSSetter
 from models.tenant import Tenant
+from views.window_config import WindowConfig
+from views.window_dragable import WindowDragable
 
 import logging
 import logging.handlers
 
 
-class WindowMain(QtWidgets.QWidget):
+class WindowMain(WindowDragable):
     def __init__(self, session_id, token, service, login_window):
         super().__init__()
 
         self.session_id = session_id
         self.token = token
         self.login_window = login_window
+        self.children_windows = dict()
+        self.children_windows['config'] = None
         self.tenants = dict()
 
         # 日志设置
@@ -74,12 +77,6 @@ class WindowMain(QtWidgets.QWidget):
         self.layout_main.setSpacing(0)
         self.layout_main.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout_main)
-
-        # 鼠标状态
-        self.setMouseTracking(True)
-        self.edge_range = 4
-        self.mouse_pos = None  # 鼠标相对于窗口的位置
-        self.is_left_button_pressed = False
 
         # 设置样式
         QSSSetter.set_qss(self, __file__)
@@ -203,7 +200,7 @@ class WindowMain(QtWidgets.QWidget):
         button_group_view = QtWidgets.QButtonGroup(self)
         button_view_tenants = QtWidgets.QPushButton('商户')
         button_view_tenants.setFixedSize(192, 40)
-        button_view_tenants.setObjectName('tab')
+        button_view_tenants.setObjectName('tab1')
         button_view_tenants.setCheckable(True)
         button_view_tenants.setChecked(True)
         button_view_tenants.clicked.connect(
@@ -211,7 +208,7 @@ class WindowMain(QtWidgets.QWidget):
         )
         button_view_tools = QtWidgets.QPushButton('工具')
         button_view_tools.setFixedSize(192, 40)
-        button_view_tools.setObjectName('tab')
+        button_view_tools.setObjectName('tab2')
         button_view_tools.setCheckable(True)
         button_view_tools.clicked.connect(
             lambda: self.swith_tenants_tools('tools')
@@ -320,7 +317,9 @@ class WindowMain(QtWidgets.QWidget):
         menu_users = self.menu_setting.addMenu('用户管理')
         menu_users.addAction('用户创建')
         menu_users.addAction('用户修改')
-        self.menu_setting.addAction('环境配置', self.show_config_window)
+        menu_envs = self.menu_setting.addMenu('环境配置')
+        menu_envs.addAction('环境创建', self.show_config_window)
+        menu_envs.addAction('环境修改', self.show_setting_window)
         self.menu_setting.addAction('历史审查')
 
         layout = QtWidgets.QHBoxLayout()
@@ -329,226 +328,6 @@ class WindowMain(QtWidgets.QWidget):
         layout.addWidget(self.button_setting)
         layout.addStretch()
         self.widget_bottom.setLayout(layout)
-
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self.is_left_button_pressed = True
-            mouse_x = event.globalPos().x()
-            mouse_y = event.globalPos().y()
-            rect_window = self.rect()
-            topleft_point = self.mapToGlobal(rect_window.topLeft())
-            rightbottom_point = self.mapToGlobal(rect_window.bottomRight())
-            if (
-                (topleft_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (topleft_point.x() + self.edge_range) and
-                (topleft_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (topleft_point.y() + self.edge_range)
-            ):
-                self.mouse_pos = 'LEFTTOP'  # 鼠标位于窗口左上角
-            elif (
-                (rightbottom_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (rightbottom_point.x() + self.edge_range) and
-                (topleft_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (topleft_point.y() + self.edge_range)
-            ):
-                self.mouse_pos = 'RIGHTTOP'
-            elif (
-                (topleft_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (topleft_point.x() + self.edge_range) and
-                (rightbottom_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (rightbottom_point.y() + self.edge_range)
-            ):
-                self.mouse_pos = 'LEFTBOTTOM'
-            elif (
-                (rightbottom_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (rightbottom_point.x() + self.edge_range) and
-                (rightbottom_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (rightbottom_point.y() + self.edge_range)
-            ):
-                self.mouse_pos = 'RIGHTBOTTOM'
-            elif (
-                (topleft_point.x() + self.edge_range) < mouse_x and
-                mouse_x < (rightbottom_point.x() - self.edge_range) and
-                (topleft_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (topleft_point.y() + self.edge_range)
-            ):
-                self.mouse_pos = 'TOP'
-            elif (
-                (topleft_point.x() + self.edge_range) < mouse_x and
-                mouse_x < (rightbottom_point.x() - self.edge_range) and
-                (rightbottom_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (rightbottom_point.y() + self.edge_range)
-            ):
-                self.mouse_pos = 'BOTTOM'
-            else:
-                self.drag_pos = event.globalPos()  # 拖拽起始点坐标
-                self.setCursor(
-                    QCursor(QtCore.Qt.OpenHandCursor)
-                )
-            event.accept()
-
-    def mouseMoveEvent(self, event):
-        mouse_x = event.globalPos().x()
-        mouse_y = event.globalPos().y()
-        rect_window = self.rect()
-        topleft_point = self.mapToGlobal(rect_window.topLeft())
-        rightbottom_point = self.mapToGlobal(rect_window.bottomRight())
-        if not self.is_left_button_pressed:
-            # 仅改变鼠标形状
-            if (
-                (topleft_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (topleft_point.x() + self.edge_range) and
-                (topleft_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (topleft_point.y() + self.edge_range)
-            ):
-                # 左上
-                self.setCursor(
-                    QCursor(QtCore.Qt.SizeFDiagCursor)
-                )  # 设置鼠标形状
-            elif (
-                (rightbottom_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (rightbottom_point.x() + self.edge_range) and
-                (topleft_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (topleft_point.y() + self.edge_range)
-            ):
-                # 右上
-                self.setCursor(
-                    QCursor(QtCore.Qt.SizeBDiagCursor)
-                )  # 设置鼠标形状
-            elif (
-                (topleft_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (topleft_point.x() + self.edge_range) and
-                (rightbottom_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (rightbottom_point.y() + self.edge_range)
-            ):
-                # 左下
-                self.setCursor(
-                    QCursor(QtCore.Qt.SizeBDiagCursor)
-                )  # 设置鼠标形状
-            elif (
-                (rightbottom_point.x() - self.edge_range) <= mouse_x and
-                mouse_x <= (rightbottom_point.x() + self.edge_range) and
-                (rightbottom_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (rightbottom_point.y() + self.edge_range)
-            ):
-                # 右下
-                self.setCursor(
-                    QCursor(QtCore.Qt.SizeFDiagCursor)
-                )  # 设置鼠标形状
-            elif (
-                (topleft_point.x() + self.edge_range) < mouse_x and
-                mouse_x < (rightbottom_point.x() - self.edge_range) and
-                (topleft_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (topleft_point.y() + self.edge_range)
-            ):
-                # 上
-                self.setCursor(
-                    QCursor(QtCore.Qt.SizeVerCursor)
-                )  # 设置鼠标形状
-            elif (
-                (topleft_point.x() + self.edge_range) < mouse_x and
-                mouse_x < (rightbottom_point.x() - self.edge_range) and
-                (rightbottom_point.y() - self.edge_range) <= mouse_y and
-                mouse_y <= (rightbottom_point.y() + self.edge_range)
-            ):
-                # 下
-                self.setCursor(
-                    QCursor(QtCore.Qt.SizeVerCursor)
-                )  # 设置鼠标形状
-            else:
-                self.setCursor(
-                    QCursor(QtCore.Qt.ArrowCursor)
-                )  # 设置鼠标形状
-        elif self.mouse_pos is None:
-            # 拖拽改变窗口位置
-            self.move(self.pos() + event.globalPos() - self.drag_pos)
-            self.drag_pos = event.globalPos()
-            event.accept()
-        else:
-            rect_new = QtCore.QRect(topleft_point, rightbottom_point)
-            if self.mouse_pos == 'LEFTTOP':
-                if (
-                    self.window_min_width <
-                    rightbottom_point.x() - mouse_x <
-                    self.window_max_width
-                ):
-                    rect_new.setX(mouse_x)
-
-                if (
-                    self.window_min_height <
-                    rightbottom_point.y() - mouse_y <
-                    self.window_max_height
-                ):
-                    rect_new.setY(mouse_y)
-
-            if self.mouse_pos == 'TOP':
-                if (
-                    self.window_min_height <
-                    rightbottom_point.y() - mouse_y <
-                    self.window_max_height
-                ):
-                    rect_new.setY(mouse_y)
-
-            if self.mouse_pos == 'RIGHTBOTTOM':
-                if (
-                    self.window_min_width <
-                    mouse_x - topleft_point.x() <
-                    self.window_max_width
-                ):
-                    rect_new.setX(mouse_x)
-                if (
-                    self.window_min_height <
-                    mouse_y - topleft_point.y() <
-                    self.window_max_height
-                ):
-                    rect_new.setY(mouse_y)
-
-            if self.mouse_pos == 'BOTTOM':
-                if (
-                    self.window_min_height <
-                    mouse_y - topleft_point.y() <
-                    self.window_max_height
-                ):
-                    rect_new.setY(mouse_y)
-
-            if self.mouse_pos == 'RIGHTTOP':
-                if (
-                    self.window_min_width <
-                    mouse_x - topleft_point.x() <
-                    self.window_max_width
-                ):
-                    rect_new.setX(mouse_x)
-                if (
-                    self.window_min_height <
-                    rightbottom_point.y() - mouse_y <
-                    self.window_max_height
-                ):
-                    rect_new.setY(mouse_y)
-
-            if self.mouse_pos == 'LEFTBOTTOM':
-                if (
-                    self.window_min_width <
-                    rightbottom_point.x() - mouse_x <
-                    self.window_max_width
-                ):
-                    rect_new.setX(mouse_x)
-                if (
-                    self.window_min_height <
-                    mouse_y - topleft_point.y() <
-                    self.window_max_height
-                ):
-                    rect_new.setY(mouse_y)
-
-            self.setGeometry(rect_new)
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self.mouse_pos = None
-            self.is_left_button_pressed = False
-            self.setCursor(
-                QCursor(QtCore.Qt.ArrowCursor)
-            )
-            event.accept()
 
     def swith_tenants_tools(self, tab):
         if tab == 'tenants':
@@ -622,6 +401,11 @@ class WindowMain(QtWidgets.QWidget):
     def renew_token(self, token):
         self.token = token
 
+    def set_enabled_cascade(self, enabled):
+        for k, v in self.children_windows.items():
+            if v:
+                v.setEnabled(enabled)
+
     def popup_menu_settings(self):
         pos = QtCore.QPoint()
         pos.setX(0)
@@ -688,4 +472,12 @@ class WindowMain(QtWidgets.QWidget):
                 menu_tenant_group.exec(self.tree_tenants.mapToGlobal(pos))
 
     def show_config_window(self):
+        config_window = self.children_windows['config']
+        if not config_window:
+            config_window = WindowConfig(self)
+            self.children_windows['config'] = config_window
+        config_window.show()
+        config_window.activateWindow()
+
+    def show_setting_window(self):
         pass

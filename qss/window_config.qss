@@ -1,0 +1,77 @@
+QWidget#head{
+    border-top-left-radius:5px;
+    border-top-right-radius:5px;
+    background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(202,12,22),stop:1 rgb(255,102,51));
+    border-left:1px solid black;
+    border-right:1px solid black;
+    border-top:1px solid black;
+}
+
+QPushButton#button_min_window{
+    background:transparent;
+    border-image:url(images/minimize-window.png);
+}
+
+QPushButton#button_min_window:hover{
+    background-color:rgb(255, 0, 0);
+}
+
+QPushButton#button_close_window{
+    background:transparent;
+    border-image:url(images/close-window.png);
+}
+
+QPushButton#button_close_window:hover{
+    background-color:rgb(255, 0, 0);
+}
+
+QWidget#body{
+    border-bottom-left-radius:5px;
+    border-bottom-right-radius:5px;
+    background-color:rgba(255, 255, 255, 100%);
+    border-left:1px solid black;
+    border-right:1px solid black;
+    border-bottom:1px solid black;
+}
+
+QLabel{
+    font-size:14px;
+    font-family:"微软雅黑";
+    margin-left:10px;
+}
+
+QLabel#hint{
+    font-size:12px;
+    font-family:"微软雅黑";
+    color:red;
+    margin-right:10px;
+}
+
+QLabel#info{
+    font-size:12px;
+    font-family:"微软雅黑";
+    color:red;
+}
+
+QLineEdit{
+    font-size:14px;
+    font-family:"微软雅黑";
+    margin-top:5px;
+    border:1px solid black;
+}
+
+QLineEdit:focus{
+    border:2px solid rgb(255,102,51);
+}
+
+QPushButton#save{
+    font-size:14px;
+    font-family:"微软雅黑";
+    font-weight:bold;
+    color:white;
+    border-radius:5px;
+    margin-left:5px;
+    margin-right:5px;
+    background-color:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 rgb(255,102,51),stop:1 rgb(255,102,51));
+    border:1px solid red;
+}

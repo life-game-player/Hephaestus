@@ -2,6 +2,9 @@ QWidget#window_buttons{
     border-top-left-radius:5px;
     border-top-right-radius:5px;
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(202,12,22),stop:1 rgb(255,102,51));
+    border-left:1px solid black;
+    border-right:1px solid black;
+    border-top:1px solid black;
 }
 
 QPushButton#button_min_window{
@@ -24,10 +27,14 @@ QPushButton#button_close_window:hover{
 
 QWidget#head{
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(202,12,22),stop:1 rgb(255,102,51));
+    border-left:1px solid black;
+    border-right:1px solid black;
 }
 
 QWidget#body{
     background-color:white;
+    border-left:1px solid black;
+    border-right:1px solid black;
 }
 
 QLabel#user_photo{
@@ -56,7 +63,9 @@ QComboBox#env{
     height:30px;
     padding-left:5px;
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:1,stop:0 rgb(255,51,51),stop:1 rgb(255,153,102));
-    border:0px;
+    border:None;
+    border-left:1px solid black;
+    border-right:1px solid black;
 }
 
 QLabel#search_icon{
@@ -64,19 +73,24 @@ QLabel#search_icon{
     background-image:url(images/search.png);
     background-position:center;
     background-repeat:none;
+    border-left:1px solid black;
 }
 
 QLineEdit#search_tenant{
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(255,153,102),stop:1 rgb(255,255,255));
-    border:0px;
+    border:None;
     font-family:"微软雅黑";
     font-size:14px;
+    border-right:1px solid black;
 }
 
 QWidget#bottom{
     border-bottom-left-radius:5px;
     border-bottom-right-radius:5px;
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(202,12,22),stop:1 rgb(255,102,51));
+    border-left:1px solid black;
+    border-right:1px solid black;
+    border-bottom:1px solid black;
 }
 
 QPushButton#settings{
@@ -90,6 +104,8 @@ QPushButton#settings{
 QPushButton#settings:hover{
     background-color:rgb(255,102,51);
     border-bottom-left-radius:5px;
+    border-left:1px solid black;
+    border-bottom:1px solid black;
 }
 
 QListView#env_list::item{
@@ -100,17 +116,34 @@ QListView#env_list::item{
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(255,153,102),stop:1 rgb(255,255,255));
 }
 
-QPushButton#tab{
+QPushButton#tab1{
     background-color:white;
     font-size:16px;
     font-family:"微软雅黑";
     border:None;
     text-align:justify;
+    border-left:1px solid black;
 }
 
-QPushButton#tab:checked{
+QPushButton#tab2{
+    background-color:white;
+    font-size:16px;
+    font-family:"微软雅黑";
+    border:None;
+    text-align:justify;
+    border-right:1px solid black;
+}
+
+QPushButton#tab1:checked{
     border:None;
     border-bottom:2px solid red;
+    border-left:1px solid black;
+}
+
+QPushButton#tab2:checked{
+    border:None;
+    border-bottom:2px solid red;
+    border-right:1px solid black;
 }
 
 QLabel#message{
@@ -125,6 +158,8 @@ QTreeWidget{
     font-family:"微软雅黑";
     border:None;
     margin-top:10px;
+    border-left:1px solid black;
+    border-right:1px solid black;
 }
 
 QTreeWidget::item{

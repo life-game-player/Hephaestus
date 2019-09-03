@@ -1,12 +1,11 @@
 import getpass
 import threading
-import logging
-import logging.handlers
 
 from rpyc.utils.server import ThreadedServer
 
 from services.kos import Kos
 import torch
+from clio import logger
 
 
 def run(host, user, passwd):
@@ -19,22 +18,6 @@ def reset_option():
     global special
     special = input('欢迎回到您的世界!\n')
 
-
-# 配置logger
-logging_handler = logging.handlers.RotatingFileHandler(
-    'logs/volcano.log',
-    'a',
-    1024 * 1024,
-    10,
-    'utf-8'
-)
-logging_format = logging.Formatter(
-    '%(asctime)s [%(name)s - %(levelname)s] %(message)s'
-)
-logging_handler.setFormatter(logging_format)
-logger = logging.getLogger()
-logger.addHandler(logging_handler)
-logger.setLevel(logging.DEBUG)
 
 print('准备点燃火山...')
 host = input('请指定火山位置(默认为本地): ') or 'localhost'
@@ -67,7 +50,7 @@ if lighted:
                         print('主宰{}的密令已重置!'.format(dominated_name))
                     except Exception as e:
                         print('重置过程发生了一些问题...请查阅日志')
-                        logging.error(
+                        logger.error(
                             "{} occured".format(type(e).__name__),
                             exc_info=True
                         )
@@ -90,7 +73,7 @@ if lighted:
                     run(host, user, passwd)
                 except Exception as e:
                     print('创建过程发生了一些问题...请查阅日志')
-                    logging.error(
+                    logger.error(
                         "{} occured".format(type(e).__name__),
                         exc_info=True
                     )

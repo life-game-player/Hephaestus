@@ -1,5 +1,3 @@
-import logging
-import logging.handlers
 import uuid
 import datetime
 import time
@@ -8,26 +6,15 @@ import threading
 import rpyc
 
 from models import users
-import torch
+from models import mysql
+from models import environments
+from models import mnemosyne
+from clio import logger
 
 
 class Kos(rpyc.Service):
     def __init__(self, host, user, passwd):
         super().__init__()
-        logging_handler = logging.handlers.RotatingFileHandler(
-            'logs/Kos.log',
-            'a',
-            1024 * 1024,
-            10,
-            'utf-8'
-        )
-        logging_format = logging.Formatter(
-            '%(asctime)s [%(name)s - %(levelname)s] %(message)s'
-        )
-        logging_handler.setFormatter(logging_format)
-        logger = logging.getLogger()
-        logger.addHandler(logging_handler)
-        logger.setLevel(logging.DEBUG)
 
         self.login_users = dict()
         self.host = host
@@ -97,3 +84,43 @@ class Kos(rpyc.Service):
         else:
             # token失效
             return -1
+
+    def exposed_create_env(
+        self, session_id, token,
+        env, read_host, write_host, user, passwd
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+            result = 999
+            if write_host and user and passwd:
+                result1 = 0
+                result2 = 0
+                if read_host:
+                    result1 = mysql.test(read_host, user, passwd)
+                result2 = mysql.test(write_host, user, passwd)
+                result = result1 + result2
+                if not result:
+                    # 插入数据库
+                    if environments.create(
+                        self.host,
+                        self.user,
+                        self.passwd,
+                        env, read_host, write_host, user, passwd
+                    ):
+                        result = 3
+            else:
+                result = 2
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                operator, 1, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
