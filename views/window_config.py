@@ -189,6 +189,8 @@ class WindowConfig(WindowDragable):
                 self.label_info.setText('写库连接失败!')
             elif result == 3:
                 self.label_info.setText('数据库发生错误!')
+            elif result == 4:
+                self.label_info.setText('权限不足!')
             elif result == -1:
                 # token过期
                 self.setEnabled(False)

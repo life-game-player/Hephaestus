@@ -52,3 +52,21 @@ def get(
         env, env_read_host, env_write_host
     )
     return torch.query(conn, sql)
+
+
+def list(
+    db_host, db_user, db_passwd,
+    curr_user_id=None
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    if curr_user_id:
+        sql = (
+            "SELECT `name` FROM islands i "
+            "WHERE EXISTS(SELECT 1 "
+            "FROM permission p "
+            "WHERE i.name = p.island_name "
+            "AND p.access_level >= 1)"
+        )
+    else:
+        sql = "SELECT `name` FROM islands"
+    return torch.query(conn, sql)

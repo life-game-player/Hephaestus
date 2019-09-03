@@ -9,7 +9,6 @@ from models import users
 from models import mysql
 from models import environments
 from models import mnemosyne
-from clio import logger
 
 
 class Kos(rpyc.Service):
@@ -41,8 +40,30 @@ class Kos(rpyc.Service):
                     del self.login_users[k]
             time.sleep(self.session_period)
 
-    def exposed_get_environments(self):
-        return ['开发环境', '测试环境', '生产环境']
+    def exposed_get_environments(self, session_id, token):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户是否为管理员
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if operator_info and operator_info[0]['dominated']:
+                return environments.list(
+                    self.host, self.user, self.passwd
+                )
+            else:
+                return environments.list(
+                    self.host, self.user, self.passwd,
+                    operator
+                )
+        else:
+            # token失效
+            return -1
 
     def exposed_login(self, session_id, user, passwd):
         user = users.login(self.host, self.user, self.passwd, user, passwd)
@@ -95,37 +116,45 @@ class Kos(rpyc.Service):
         ):
             # token有效
             operator = self.login_users[session_id]['id']
-            result = 999
-            if write_host and user and passwd:
-                result1 = 0
-                result2 = 0
-                if read_host:
-                    result1 = mysql.test(read_host, user, passwd)
-                result2 = mysql.test(write_host, user, passwd)
-                result = result1 + result2
-                if not result:
-                    # 是否存在重复的环境
-                    dup_env = environments.get(
-                        self.host,
-                        self.user,
-                        self.passwd,
-                        env, read_host, write_host
-                    )
-                    if not isinstance(dup_env, list):
-                        return 3
-                    elif dup_env:
-                        return dup_env[0]['name']
-                    else:
-                        # 插入数据库
-                        if environments.create(
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if operator_info and operator_info[0]['dominated']:
+                result = 999
+                if write_host and user and passwd:
+                    result1 = 0
+                    result2 = 0
+                    if read_host:
+                        result1 = mysql.test(read_host, user, passwd)
+                    result2 = mysql.test(write_host, user, passwd)
+                    result = result1 + result2
+                    if not result:
+                        # 是否存在重复的环境
+                        dup_env = environments.get(
                             self.host,
                             self.user,
                             self.passwd,
-                            env, read_host, write_host, user, passwd
-                        ):
-                            result = 3
+                            env, read_host, write_host
+                        )
+                        if not isinstance(dup_env, list):
+                            result = 3  # 数据库错误
+                        elif dup_env:
+                            return dup_env[0]['name']
+                        else:
+                            # 插入数据库
+                            if environments.create(
+                                self.host,
+                                self.user,
+                                self.passwd,
+                                env, read_host, write_host, user, passwd
+                            ):
+                                result = 3  # 数据库错误
+                else:
+                    result = 2  # 写库连接失败
             else:
-                result = 2
+                result = 4  # 用户权限不足
             mnemosyne.create(
                 self.host,
                 self.user,

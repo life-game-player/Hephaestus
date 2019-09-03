@@ -160,8 +160,9 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
     sql = (
         "CREATE TABLE permission("
         "island_name VARCHAR(30) NOT NULL, "
-        "god_name VARCHAR(50) NOT NULL, "
-        "access_level INT NOT NULL COMMENT '1: Tagrag, 2: Lord, 3: King', "
+        "god_id BIGINT NOT NULL, "
+        "access_level INT NOT NULL "
+        "COMMENT '1: Tagrag(r), 2: Lord(w), 3: King(m)', "
         "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
         ")"
     )

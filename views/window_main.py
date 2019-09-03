@@ -158,7 +158,14 @@ class WindowMain(WindowDragable):
         combobox_env.setView(listview_combobox)
         if self.kos:
             try:
-                combobox_env.addItems(self.kos.root.get_environments())
+                enviroments = self.kos.root.get_environments(
+                    self.session_id, self.token
+                )
+                if isinstance(enviroments, list):
+                    for env in enviroments:
+                        combobox_env.addItem(env['name'])
+                else:
+                    self.show_message('请重新登录!')
             except Exception as e:
                 self.show_message('服务器连接失败!')
                 logging.error(
