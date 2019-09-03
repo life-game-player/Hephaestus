@@ -25,11 +25,11 @@ def light_up(host, user, password):
 
 
 def query(conn, sql):
+    results = None
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as c:
             c.execute(sql)
             results = c.fetchall()
-            return results
     except Exception as e:
         logger.error(
             "{} occured".format(type(e).__name__),
@@ -37,6 +37,7 @@ def query(conn, sql):
         )
     finally:
         conn.close()
+    return results
 
 
 def update(conn, list_sql):

@@ -36,3 +36,19 @@ def create(
             exc_info=True
         )
     return result
+
+
+def get(
+    host, user, passwd,
+    env, env_read_host, env_write_host
+):
+    conn = torch.connect(host, user, passwd, 'hephaestus')
+    sql = (
+        "SELECT `name` FROM islands "
+        "WHERE `name` = '{}' "
+        "OR read_host = '{}' "
+        "OR write_host = '{}' "
+    ).format(
+        env, env_read_host, env_write_host
+    )
+    return torch.query(conn, sql)

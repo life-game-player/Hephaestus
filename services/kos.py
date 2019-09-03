@@ -104,14 +104,26 @@ class Kos(rpyc.Service):
                 result2 = mysql.test(write_host, user, passwd)
                 result = result1 + result2
                 if not result:
-                    # 插入数据库
-                    if environments.create(
+                    # 是否存在重复的环境
+                    dup_env = environments.get(
                         self.host,
                         self.user,
                         self.passwd,
-                        env, read_host, write_host, user, passwd
-                    ):
-                        result = 3
+                        env, read_host, write_host
+                    )
+                    if not isinstance(dup_env, list):
+                        return 3
+                    elif dup_env:
+                        return dup_env[0]['name']
+                    else:
+                        # 插入数据库
+                        if environments.create(
+                            self.host,
+                            self.user,
+                            self.passwd,
+                            env, read_host, write_host, user, passwd
+                        ):
+                            result = 3
             else:
                 result = 2
             mnemosyne.create(

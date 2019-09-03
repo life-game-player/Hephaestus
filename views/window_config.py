@@ -193,5 +193,7 @@ class WindowConfig(WindowDragable):
                 # token过期
                 self.setEnabled(False)
                 self.main_window.login_window.show()
+            elif isinstance(result, str):
+                self.label_info.setText('已存在重复的环境: {}'.format(result))
             else:
                 self.label_info.setText('未知错误!')
