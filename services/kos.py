@@ -138,7 +138,7 @@ class Kos(rpyc.Service):
                             self.passwd,
                             env, read_host, write_host
                         )
-                        if not isinstance(dup_env, list):
+                        if dup_env is None:
                             result = 3  # 数据库错误
                         elif dup_env:
                             return dup_env[0]['name']

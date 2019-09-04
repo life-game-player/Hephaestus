@@ -152,30 +152,14 @@ class WindowMain(WindowDragable):
         )
 
         # 环境选择下拉框和商户搜索组件
-        combobox_env = QtWidgets.QComboBox()
+        self.combobox_env = QtWidgets.QComboBox()
         listview_combobox = QtWidgets.QListView()
         listview_combobox.setObjectName('env_list')
-        combobox_env.setView(listview_combobox)
-        if self.kos:
-            try:
-                enviroments = self.kos.root.get_environments(
-                    self.session_id, self.token
-                )
-                if isinstance(enviroments, list):
-                    for env in enviroments:
-                        combobox_env.addItem(env['name'])
-                else:
-                    self.show_message('请重新登录!')
-            except Exception as e:
-                self.show_message('服务器连接失败!')
-                logging.error(
-                    "{} occured".format(type(e).__name__),
-                    exc_info=True
-                )
-        else:
-            self.show_message('服务器连接失败!')
-        combobox_env.setObjectName('env')
-        combobox_env.setFixedSize(self.window_min_width, 30)
+        self.combobox_env.setView(listview_combobox)
+        self.combobox_env.currentIndexChanged.connect(self.change_env)
+        self.refresh_env()
+        self.combobox_env.setObjectName('env')
+        self.combobox_env.setFixedSize(self.window_min_width, 30)
         label_search = QtWidgets.QLabel()
         label_search.setObjectName('search_icon')
         label_search.setFixedSize(30, 30)
@@ -197,7 +181,7 @@ class WindowMain(WindowDragable):
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(combobox_env)
+        layout.addWidget(self.combobox_env)
         layout_h = QtWidgets.QHBoxLayout()
         layout_h.setSpacing(0)
         layout_h.setContentsMargins(0, 0, 0, 0)
@@ -488,3 +472,32 @@ class WindowMain(WindowDragable):
 
     def show_setting_window(self):
         pass
+
+    def refresh_env(self):
+        self.combobox_env.clear()
+        if self.kos:
+            try:
+                enviroments = self.kos.root.get_environments(
+                    self.session_id, self.token
+                )
+                if isinstance(enviroments, list):
+                    for env in enviroments:
+                        self.combobox_env.addItem(env['name'])
+                    self.combobox_env.addItem('<刷新环境配置......>')
+                else:
+                    # 锁定界面，要求重新登录
+                    self.setEnabled(False)
+                    self.login_window.show()
+            except Exception as e:
+                self.show_message('服务器连接失败!')
+                logging.error(
+                    "{} occured".format(type(e).__name__),
+                    exc_info=True
+                )
+        else:
+            self.show_message('服务器连接失败!')
+
+    def change_env(self):
+        curr_env = self.combobox_env.currentText()
+        if curr_env == '<刷新环境配置......>':
+            self.refresh_env()

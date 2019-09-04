@@ -161,16 +161,26 @@ class WindowConfig(WindowDragable):
     def save_connection(
         self, env, read_host, write_host, user, passwd
     ):
+        is_form_valid = True
         if not env:
+            self.label_env_hint.setText('必填字段')
             self.label_env_hint.setVisible(True)
+            is_form_valid = False
+        elif env == '<刷新环境配置......>':
+            self.label_env_hint.setText('环境名称不合法')
+            self.label_env_hint.setVisible(True)
+            is_form_valid = False
         if not write_host:
             self.label_write_host_hint.setVisible(True)
+            is_form_valid = False
         if not user:
             self.label_username_hint.setVisible(True)
+            is_form_valid = False
         if not passwd:
             self.label_passwd_hint.setVisible(True)
+            is_form_valid = False
 
-        if env and write_host and user and passwd:
+        if is_form_valid:
             result = 999
             try:
                 result = self.main_window.kos.root.create_env(

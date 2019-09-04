@@ -65,8 +65,9 @@ def list(
             "WHERE EXISTS(SELECT 1 "
             "FROM permission p "
             "WHERE i.name = p.island_name "
-            "AND p.access_level >= 1)"
+            "AND p.access_level >= 1) "
+            "ORDER BY Created"
         )
     else:
-        sql = "SELECT `name` FROM islands"
+        sql = "SELECT `name` FROM islands ORDER BY Created"
     return torch.query(conn, sql)

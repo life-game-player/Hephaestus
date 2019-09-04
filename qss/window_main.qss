@@ -58,7 +58,7 @@ QLabel#user_info{
 }
 
 QComboBox#env{
-    font-size:14px;
+    font-size:12px;
     font-family:"微软雅黑";
     height:30px;
     padding-left:5px;
@@ -110,7 +110,7 @@ QPushButton#settings:hover{
 
 QListView#env_list::item{
     height:30px;
-    font-size:14px;
+    font-size:12px;
     font-family:"微软雅黑";
     padding-left:5px;
     background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(255,153,102),stop:1 rgb(255,255,255));
