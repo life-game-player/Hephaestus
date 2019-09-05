@@ -381,6 +381,7 @@ class WindowMain(WindowDragable):
                             self.item_root_favourite_tenants.childCount()
                         )
                     )
+                    self.label_message.setVisible(False)  # 成功
                 elif all_tenants == -1:
                     # 锁定界面，要求重新登录
                     self.setEnabled(False)
