@@ -360,6 +360,12 @@ class WindowMain(WindowDragable):
                             favourite_tenants[t['id']] = Tenant(
                                 t['id'], t['name']
                             )
+                    self.item_root_all_tenants.setText(
+                        0,
+                        '所有商户 ({})'.format(
+                            self.item_root_all_tenants.childCount()
+                        )
+                    )
 
                     for id, t in favourite_tenants.items():
                         item_favourite_tenants = QtWidgets.QTreeWidgetItem()
@@ -369,6 +375,12 @@ class WindowMain(WindowDragable):
                             item_favourite_tenants
                         )
                         self.tenants['常用商户'].append(t)
+                    self.item_root_favourite_tenants.setText(
+                        0,
+                        '常用商户 ({})'.format(
+                            self.item_root_favourite_tenants.childCount()
+                        )
+                    )
                 elif all_tenants == -1:
                     # 锁定界面，要求重新登录
                     self.setEnabled(False)
@@ -413,7 +425,7 @@ class WindowMain(WindowDragable):
             parent = selected_item.parent()
             if parent:
                 # 排除一级节点
-                group = parent.text(0)
+                group = parent.text(0)[:4]
                 index = parent.indexOfChild(selected_item)
                 curr_tenant = self.tenants[group][index]
                 menu_tenant = QtWidgets.QMenu()
@@ -447,7 +459,7 @@ class WindowMain(WindowDragable):
                     self.combobox_env.currentText()
                 )
                 menu_tenant.exec(self.tree_tenants.mapToGlobal(pos))
-            elif selected_item.text(0) == '所有商户':
+            elif selected_item.text(0)[:4] == '所有商户':
                 # 所有商户的操作菜单
                 menu_tenant_group = QtWidgets.QMenu()
                 menu_tenant_group.addAction('刷新', self.refresh_tenants)
@@ -513,15 +525,28 @@ class WindowMain(WindowDragable):
     def search(self, keyword):
         if self.tab == 'tenants':  # 在商户tab中搜索
             if keyword:
+                filtered_count = 0
                 self.item_root_favourite_tenants.setHidden(True)
-                self.item_root_all_tenants.setText(0, '搜索结果')
                 tenant_search = re.compile(r'{}'.format(keyword))
                 for i, t in enumerate(self.tenants['所有商户']):
                     if not tenant_search.search(t.name):
                         self.item_root_all_tenants.child(i).setHidden(True)
+                        filtered_count += 1
+                self.item_root_all_tenants.setText(
+                    0,
+                    '搜索结果 ({})'.format(
+                        self.item_root_all_tenants.childCount() -
+                        filtered_count
+                    )
+                )
             else:  # 恢复默认显示
                 self.item_root_favourite_tenants.setHidden(False)
-                self.item_root_all_tenants.setText(0, '所有商户')
+                self.item_root_all_tenants.setText(
+                    0,
+                    '所有商户 ({})'.format(
+                        self.item_root_all_tenants.childCount()
+                    )
+                )
                 for i in range(self.item_root_all_tenants.childCount()):
                     self.item_root_all_tenants.child(i).setHidden(False)
         elif self.tab == 'tools':  # 在工具tab中搜索
