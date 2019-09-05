@@ -90,7 +90,20 @@ class Kos(rpyc.Service):
             session_id in self.login_users and
             token == self.login_users[session_id]['token']
         ):  # token有效
-            env_info = environments.get(self.host, self.user, self.passwd, env)
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if operator_info and operator_info[0]['dominated']:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
             if env_info:
                 list_tenants = tenants.list(
                     env_info[0]['read_host'],
@@ -129,7 +142,7 @@ class Kos(rpyc.Service):
                     result = result1 + result2
                     if not result:
                         # 是否存在重复的环境
-                        dup_env = environments.get(
+                        dup_env = environments.find_duplicate(
                             self.host,
                             self.user,
                             self.passwd,

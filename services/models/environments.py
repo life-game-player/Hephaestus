@@ -38,22 +38,38 @@ def create(
     return result
 
 
-def get(
-    host, user, passwd,
-    env, env_read_host=None, env_write_host=None
+def find_duplicate(
+    host, user, passwd, env, env_read_host, env_write_host
 ):
     conn = torch.connect(host, user, passwd, 'hephaestus')
-    if env_write_host:
+    sql = (
+        "SELECT `name`, read_host, user, "
+        "CBC_DECRYPT(guid, secret, vector) AS passwd "
+        "FROM islands "
+        "WHERE `name` = '{}' "
+        "OR read_host = '{}' "
+        "OR write_host = '{}' "
+    ).format(
+        env, env_read_host, env_write_host
+    )
+    return torch.query(conn, sql)
+
+
+def get(
+    host, user, passwd, env, curr_user_id=None
+):
+    conn = torch.connect(host, user, passwd, 'hephaestus')
+    if curr_user_id:
         sql = (
             "SELECT `name`, read_host, user, "
             "CBC_DECRYPT(guid, secret, vector) AS passwd "
             "FROM islands "
             "WHERE `name` = '{}' "
-            "OR read_host = '{}' "
-            "OR write_host = '{}' "
-        ).format(
-            env, env_read_host, env_write_host
-        )
+            "AND EXISTS(SELECT 1 "
+            "FROM permission p "
+            "WHERE i.name = p.island_name "
+            "AND p.access_level >= 1) "
+        ).format(env)
     else:
         sql = (
             "SELECT `name`, read_host, user, "

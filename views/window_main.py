@@ -237,6 +237,8 @@ class WindowMain(WindowDragable):
             0,
             QtGui.QFont("微软雅黑", 11, QtGui.QFont.Bold)
         )
+        self.item_root_favourite_tenants.setExpanded(True)
+        self.item_root_all_tenants.setExpanded(True)
 
         layout_tenants.addWidget(self.tree_tenants)
 
