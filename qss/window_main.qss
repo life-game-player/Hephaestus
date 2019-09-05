@@ -68,12 +68,12 @@ QComboBox#env{
     border-right:1px solid black;
 }
 
-QLabel#search_icon{
+QPushButton#search_icon{
     background:rgb(255,153,102);
     background-image:url(images/search.png);
     background-position:center;
     background-repeat:none;
-    border-left:1px solid black;
+    border:None;
 }
 
 QLineEdit#search_tenant{

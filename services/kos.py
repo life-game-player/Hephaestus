@@ -9,6 +9,7 @@ from models import users
 from models import mysql
 from models import environments
 from models import mnemosyne
+from models import tenants
 
 
 class Kos(rpyc.Service):
@@ -84,26 +85,22 @@ class Kos(rpyc.Service):
         removed = self.login_users.pop(session_id, None)
         return removed
 
-    def exposed_get_tenants(self, session_id, token, count=None):
+    def exposed_get_tenants(self, env, session_id, token):
         if (
             session_id in self.login_users and
             token == self.login_users[session_id]['token']
-        ):
-            # token有效
-            tenants = list()
-            if count:
-                for i in range(count):
-                    tenants.append(
-                        {'id': i, 'name': '商户{}'.format(i)}
-                    )
+        ):  # token有效
+            env_info = environments.get(self.host, self.user, self.passwd, env)
+            if env_info:
+                list_tenants = tenants.list(
+                    env_info[0]['read_host'],
+                    env_info[0]['user'],
+                    env_info[0]['passwd']
+                )
+                return list_tenants if list_tenants else list()
             else:
-                for i in range(30):
-                    tenants.append(
-                        {'id': i, 'name': '商户{}'.format(i)}
-                    )
-            return tenants
-        else:
-            # token失效
+                return 1  # 环境无效
+        else:  # token失效
             return -1
 
     def exposed_create_env(

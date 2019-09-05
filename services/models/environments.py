@@ -40,17 +40,27 @@ def create(
 
 def get(
     host, user, passwd,
-    env, env_read_host, env_write_host
+    env, env_read_host=None, env_write_host=None
 ):
     conn = torch.connect(host, user, passwd, 'hephaestus')
-    sql = (
-        "SELECT `name` FROM islands "
-        "WHERE `name` = '{}' "
-        "OR read_host = '{}' "
-        "OR write_host = '{}' "
-    ).format(
-        env, env_read_host, env_write_host
-    )
+    if env_write_host:
+        sql = (
+            "SELECT `name`, read_host, user, "
+            "CBC_DECRYPT(guid, secret, vector) AS passwd "
+            "FROM islands "
+            "WHERE `name` = '{}' "
+            "OR read_host = '{}' "
+            "OR write_host = '{}' "
+        ).format(
+            env, env_read_host, env_write_host
+        )
+    else:
+        sql = (
+            "SELECT `name`, read_host, user, "
+            "CBC_DECRYPT(guid, secret, vector) AS passwd "
+            "FROM islands "
+            "WHERE `name` = '{}' "
+        ).format(env)
     return torch.query(conn, sql)
 
 

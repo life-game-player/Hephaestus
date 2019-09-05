@@ -1,14 +1,15 @@
+import re
+
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 from qss.qss_setter import QSSSetter
 from models.tenant import Tenant
+from models import localdb
 from views.window_config import WindowConfig
 from views.window_dragable import WindowDragable
-
-import logging
-import logging.handlers
+from clio import logger
 
 
 class WindowMain(WindowDragable):
@@ -22,27 +23,12 @@ class WindowMain(WindowDragable):
         self.children_windows['config'] = None
         self.tenants = dict()
 
-        # 日志设置
-        logging_handler = logging.handlers.RotatingFileHandler(
-            'logs/main.log',
-            'a',
-            1024 * 1024,
-            10,
-            'utf-8'
-        )
-        logging_format = logging.Formatter(
-            '%(asctime)s [%(name)s - %(levelname)s] %(message)s'
-        )
-        logging_handler.setFormatter(logging_format)
-        logger = logging.getLogger()
-        logger.addHandler(logging_handler)
-        logger.setLevel(logging.DEBUG)
-
         # 连接服务
         self.kos = service
 
         # 公用标记
         self.tab = 'tenants'
+        self.combobox_env_initiated = False
 
         # 设置窗口大小
         self.window_min_width = 384
@@ -160,13 +146,16 @@ class WindowMain(WindowDragable):
         self.refresh_env()
         self.combobox_env.setObjectName('env')
         self.combobox_env.setFixedSize(self.window_min_width, 30)
-        label_search = QtWidgets.QLabel()
-        label_search.setObjectName('search_icon')
-        label_search.setFixedSize(30, 30)
+        button_search = QtWidgets.QPushButton()
+        button_search.setObjectName('search_icon')
+        button_search.setFixedSize(30, 30)
         lineedit_search = QtWidgets.QLineEdit()
         lineedit_search.setPlaceholderText('搜索')
         lineedit_search.setObjectName('search_tenant')
         lineedit_search.setFixedSize(self.window_min_width - 30, 30)
+        button_search.clicked.connect(
+            lambda: self.search(lineedit_search.text())
+        )
 
         # Tab切换
         self.frame_tenants = QtWidgets.QFrame()
@@ -185,7 +174,7 @@ class WindowMain(WindowDragable):
         layout_h = QtWidgets.QHBoxLayout()
         layout_h.setSpacing(0)
         layout_h.setContentsMargins(0, 0, 0, 0)
-        layout_h.addWidget(label_search)
+        layout_h.addWidget(button_search)
         layout_h.addWidget(lineedit_search)
         layout_tab = QtWidgets.QHBoxLayout()
         button_group_view = QtWidgets.QButtonGroup(self)
@@ -250,15 +239,6 @@ class WindowMain(WindowDragable):
         )
 
         layout_tenants.addWidget(self.tree_tenants)
-
-        '''
-        layout_scroll_tenants = QtWidgets.QVBoxLayout()
-        scroll_tenants = QtWidgets.QScrollArea()
-        scroll_tenants.setLayout(layout_tenants)
-        scroll_tenants.setWidgetResizable(True)
-        layout_scroll_tenants.addWidget(scroll_tenants)
-        self.frame_tenants.setLayout(layout_scroll_tenants)
-        '''
 
         self.frame_tenants.setLayout(layout_tenants)
 
@@ -339,7 +319,7 @@ class WindowMain(WindowDragable):
             try:
                 self.kos.root.logout(self.session_id)
             except Exception as e:
-                logging.error(
+                logger.error(
                     "{} occured".format(type(e).__name__),
                     exc_info=True
                 )
@@ -352,37 +332,56 @@ class WindowMain(WindowDragable):
         self.tenants['所有商户'].clear()
         if self.kos:
             try:
-                favourite_tenants = self.kos.root.get_tenants(
-                    self.session_id, self.token, 10
-                )
+                curr_env = self.combobox_env.currentText()
                 all_tenants = self.kos.root.get_tenants(
-                    self.session_id, self.token
+                    curr_env, self.session_id, self.token
                 )
-                if (
-                    isinstance(favourite_tenants, list) and
-                    isinstance(all_tenants, list)
-                ):
-                    for t in favourite_tenants:
-                        item_favourite_tenants = QtWidgets.QTreeWidgetItem()
-                        item_favourite_tenants.setText(0, t['name'])
-                        item_favourite_tenants.setToolTip(0, t['name'])
-                        self.item_root_favourite_tenants.addChild(
-                            item_favourite_tenants
-                        )
-                        self.tenants['常用商户'].append(Tenant(t['id'], t['name']))
+                if isinstance(all_tenants, list):
+                    # 初始化favourite_tenants
+                    favourite_tenants = dict()
+                    for tt in localdb.list_favourite_tenants(
+                        curr_env, all_tenants
+                    ):
+                        favourite_tenants[tt[0]] = None
+
                     for t in all_tenants:
                         item_all_tenants = QtWidgets.QTreeWidgetItem()
-                        item_all_tenants.setText(0, t['name'])
+                        item_all_tenants.setText(
+                            0,
+                            t['name'][:18] + (
+                                '...' if len(t['name']) > 18 else ''
+                            )
+                        )
                         item_all_tenants.setToolTip(0, t['name'])
                         self.item_root_all_tenants.addChild(item_all_tenants)
                         self.tenants['所有商户'].append(Tenant(t['id'], t['name']))
-                else:
+                        # 填充初始化favourite_tenants
+                        if t['id'] in favourite_tenants:
+                            favourite_tenants[t['id']] = Tenant(
+                                t['id'], t['name']
+                            )
+
+                    for id, t in favourite_tenants.items():
+                        item_favourite_tenants = QtWidgets.QTreeWidgetItem()
+                        item_favourite_tenants.setText(0, t.name)
+                        item_favourite_tenants.setToolTip(0, t.name)
+                        self.item_root_favourite_tenants.addChild(
+                            item_favourite_tenants
+                        )
+                        self.tenants['常用商户'].append(t)
+                elif all_tenants == -1:
                     # 锁定界面，要求重新登录
                     self.setEnabled(False)
                     self.login_window.show()
+                elif all_tenants == 1:
+                    # 环境无效，请刷新
+                    self.show_message('当前环境无效, 请刷新环境配置后重试!')
+                else:
+                    # 未知错误
+                    self.show_message('未知错误!')
             except Exception as e:
                 self.show_message('服务器连接失败!')
-                logging.error(
+                logger.error(
                     "{} occured".format(type(e).__name__),
                     exc_info=True
                 )
@@ -443,6 +442,10 @@ class WindowMain(WindowDragable):
                     "}"
                 )
                 print('ID: {}, Name: {}'.format(curr_tenant.id, curr_tenant.name))
+                localdb.visit_tenant(
+                    curr_tenant.id,
+                    self.combobox_env.currentText()
+                )
                 menu_tenant.exec(self.tree_tenants.mapToGlobal(pos))
             elif selected_item.text(0) == '所有商户':
                 # 所有商户的操作菜单
@@ -481,16 +484,18 @@ class WindowMain(WindowDragable):
                     self.session_id, self.token
                 )
                 if isinstance(enviroments, list):
+                    localdb.refresh_favourite_tenants(envs=enviroments)
                     for env in enviroments:
                         self.combobox_env.addItem(env['name'])
                     self.combobox_env.addItem('<刷新环境配置......>')
+                    self.combobox_env_initiated = True
                 else:
                     # 锁定界面，要求重新登录
                     self.setEnabled(False)
                     self.login_window.show()
             except Exception as e:
                 self.show_message('服务器连接失败!')
-                logging.error(
+                logger.error(
                     "{} occured".format(type(e).__name__),
                     exc_info=True
                 )
@@ -501,3 +506,23 @@ class WindowMain(WindowDragable):
         curr_env = self.combobox_env.currentText()
         if curr_env == '<刷新环境配置......>':
             self.refresh_env()
+        else:
+            if self.combobox_env_initiated:
+                self.refresh_tenants()
+
+    def search(self, keyword):
+        if self.tab == 'tenants':  # 在商户tab中搜索
+            if keyword:
+                self.item_root_favourite_tenants.setHidden(True)
+                self.item_root_all_tenants.setText(0, '搜索结果')
+                tenant_search = re.compile(r'{}'.format(keyword))
+                for i, t in enumerate(self.tenants['所有商户']):
+                    if not tenant_search.search(t.name):
+                        self.item_root_all_tenants.child(i).setHidden(True)
+            else:  # 恢复默认显示
+                self.item_root_favourite_tenants.setHidden(False)
+                self.item_root_all_tenants.setText(0, '所有商户')
+                for i in range(self.item_root_all_tenants.childCount()):
+                    self.item_root_all_tenants.child(i).setHidden(False)
+        elif self.tab == 'tools':  # 在工具tab中搜索
+            pass
