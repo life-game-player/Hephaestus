@@ -3,7 +3,7 @@ import torch
 
 def create(
     host, user, passwd,
-    operator, operation, result
+    module, operator, operation, result
 ):
     """
         Operation:
@@ -16,7 +16,7 @@ def create(
     conn = torch.connect(host, user, passwd, 'hephaestus')
     list_sql = list()
     list_sql.append(
-        "INSERT INTO mnemosyne(operator, operation, result) "
-        "VALUES({}, {}, {})".format(operator, operation, result)
+        "INSERT INTO mnemosyne(module, operator, operation, result) "
+        "VALUES('{}', {}, {}, {})".format(module, operator, operation, result)
     )
     torch.update(conn, list_sql)

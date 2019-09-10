@@ -9,11 +9,16 @@ from models.tenant import Tenant
 from models import localdb
 from views.window_config import WindowConfig
 from views.window_dragable import WindowDragable
+from views.window_create_user import WindowCreateUser
 from clio import logger
 
 
 class WindowMain(WindowDragable):
-    def __init__(self, session_id, token, service, login_window):
+    def __init__(
+        self, session_id, token,
+        service, login_window,
+        username, role
+    ):
         super().__init__()
 
         self.session_id = session_id
@@ -21,7 +26,11 @@ class WindowMain(WindowDragable):
         self.login_window = login_window
         self.children_windows = dict()
         self.children_windows['config'] = None
+        self.children_windows['create_user'] = None
         self.tenants = dict()
+        self.enviroments = list()
+        self.username = username
+        self.role = role
 
         # 连接服务
         self.kos = service
@@ -104,9 +113,9 @@ class WindowMain(WindowDragable):
         label_photo = QtWidgets.QLabel()
         label_photo.setFixedSize(80, 80)
         label_photo.setObjectName('user_photo')
-        label_username = QtWidgets.QLabel('Bill Guo')
+        label_username = QtWidgets.QLabel(self.username)
         label_username.setObjectName('user_name')
-        label_userinfo = QtWidgets.QLabel('Administrator')
+        label_userinfo = QtWidgets.QLabel(self.role)
         label_userinfo.setObjectName('user_info')
 
         # 布局
@@ -123,7 +132,10 @@ class WindowMain(WindowDragable):
         layout_v.addStretch(2)
         layout_v.addWidget(label_username)
         layout_v.addStretch(1)
-        layout_v.addWidget(label_userinfo)
+        layout_userinfo = QtWidgets.QHBoxLayout()
+        layout_userinfo.addWidget(label_userinfo)
+        layout_userinfo.addStretch()
+        layout_v.addLayout(layout_userinfo)
         layout_v.addStretch(2)
         self.widget_head.setLayout(layout)
 
@@ -149,6 +161,7 @@ class WindowMain(WindowDragable):
         button_search = QtWidgets.QPushButton()
         button_search.setObjectName('search_icon')
         button_search.setFixedSize(30, 30)
+        button_search.setShortcut('Return')
         lineedit_search = QtWidgets.QLineEdit()
         lineedit_search.setPlaceholderText('搜索')
         lineedit_search.setObjectName('search_tenant')
@@ -288,7 +301,7 @@ class WindowMain(WindowDragable):
             "}"
         )
         menu_users = self.menu_setting.addMenu('用户管理')
-        menu_users.addAction('用户创建')
+        menu_users.addAction('用户创建', self.show_create_user_window)
         menu_users.addAction('用户修改')
         menu_envs = self.menu_setting.addMenu('环境配置')
         menu_envs.addAction('环境创建', self.show_config_window)
@@ -500,10 +513,14 @@ class WindowMain(WindowDragable):
                 )
                 if isinstance(enviroments, list):
                     localdb.refresh_favourite_tenants(envs=enviroments)
+                    self.enviroments.clear()
                     for env in enviroments:
                         self.combobox_env.addItem(env['name'])
+                        self.enviroments.append(env['name'])
                     self.combobox_env.addItem('<刷新环境配置......>')
                     self.combobox_env_initiated = True
+                elif isinstance(enviroments, tuple) and not enviroments:
+                    pass
                 else:
                     # 锁定界面，要求重新登录
                     self.setEnabled(False)
@@ -527,6 +544,12 @@ class WindowMain(WindowDragable):
 
     def search(self, keyword):
         if self.tab == 'tenants':  # 在商户tab中搜索
+            focusing_widget = QtWidgets.QApplication.focusWidget()
+            if (
+                not focusing_widget.objectName() in
+                ['search_tenant', 'search_icon']
+            ):
+                return  # 避免快捷键的不当触发
             if keyword:
                 filtered_count = 0
                 self.item_root_favourite_tenants.setHidden(True)
@@ -554,3 +577,11 @@ class WindowMain(WindowDragable):
                     self.item_root_all_tenants.child(i).setHidden(False)
         elif self.tab == 'tools':  # 在工具tab中搜索
             pass
+
+    def show_create_user_window(self):
+        create_user_window = self.children_windows['create_user']
+        if not create_user_window:
+            create_user_window = WindowCreateUser(self)
+            self.children_windows['create_user'] = create_user_window
+        create_user_window.show()
+        create_user_window.activateWindow()

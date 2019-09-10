@@ -1,10 +1,11 @@
-from views.window_main import WindowMain
+import time
 
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 
 from qss.qss_setter import QSSSetter
 from clio import logger
+from views.window_main import WindowMain
 
 
 class WindowLogin(QtWidgets.QWidget):
@@ -110,17 +111,17 @@ class WindowLogin(QtWidgets.QWidget):
         line_edit_account.setObjectName('login')
         line_edit_account.setPlaceholderText('账号')
         line_edit_account.setFixedSize(280, 40)
-        line_edit_passwd = QtWidgets.QLineEdit()
-        line_edit_passwd.setEchoMode(QtWidgets.QLineEdit.Password)
-        line_edit_passwd.setObjectName('login')
-        line_edit_passwd.setFixedSize(280, 40)
-        line_edit_passwd.setPlaceholderText('密码')
+        self.line_edit_passwd = QtWidgets.QLineEdit()
+        self.line_edit_passwd.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.line_edit_passwd.setObjectName('login')
+        self.line_edit_passwd.setFixedSize(280, 40)
+        self.line_edit_passwd.setPlaceholderText('密码')
         button_login = QtWidgets.QPushButton('登录')
         button_login.setObjectName('login')
         button_login.setFixedSize(280, 30)
         button_login.clicked.connect(
             lambda: self.login(
-                line_edit_account.text(), line_edit_passwd.text()
+                line_edit_account.text(), self.line_edit_passwd.text()
             )
         )
         self.label_info = QtWidgets.QLabel()
@@ -132,7 +133,7 @@ class WindowLogin(QtWidgets.QWidget):
         layout.setContentsMargins(60, 0, 0, 0)
         layout.addStretch(0.5)
         layout.addWidget(line_edit_account)
-        layout.addWidget(line_edit_passwd)
+        layout.addWidget(self.line_edit_passwd)
         layout.addStretch(0.9)
         layout.addWidget(self.label_info)
         layout.addStretch(1)
@@ -141,7 +142,7 @@ class WindowLogin(QtWidgets.QWidget):
 
         # 测试
         line_edit_account.setText('Bill Guo')
-        line_edit_passwd.setText('!QAZ2wsx')
+        self.line_edit_passwd.setText('!QAZ2wsx')
 
         self.widget_body.setLayout(layout)
 
@@ -152,7 +153,9 @@ class WindowLogin(QtWidgets.QWidget):
             else:
                 token = None
                 try:
-                    token = self.kos.root.login(self.session_id, account, pwd)
+                    token, username, role = self.kos.root.login(
+                        self.session_id, account, pwd
+                    )
                 except Exception as e:
                     self.label_info.setText('服务器连接失败!')
                     logger.error(
@@ -162,6 +165,7 @@ class WindowLogin(QtWidgets.QWidget):
                     return
                 if token:
                     # 登录成功
+                    self.line_edit_passwd.clear()
                     self.hide()
                     if self.window_main:
                         self.window_main.renew_token(token)
@@ -170,7 +174,8 @@ class WindowLogin(QtWidgets.QWidget):
                         self.window_main.set_enabled_cascade(True)
                     else:
                         self.window_main = WindowMain(
-                            self.session_id, token, self.kos, self
+                            self.session_id, token, self.kos, self,
+                            username, role
                         )
                         self.window_main.show()
                 else:

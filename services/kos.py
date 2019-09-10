@@ -53,7 +53,10 @@ class Kos(rpyc.Service):
             operator_info = users.get(
                 self.host, self.user, self.passwd, operator
             )
-            if operator_info and operator_info[0]['dominated']:
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
                 return environments.list(
                     self.host, self.user, self.passwd
                 )
@@ -77,7 +80,15 @@ class Kos(rpyc.Service):
                 'token': token,
                 'expired': expired
             }
-            return token
+            user_info = users.get(self.host, self.user, self.passwd, user[0])
+            username = None
+            role = None
+            if user_info:
+                username = user_info[0]['name']
+                role = '管理员' \
+                    if int.from_bytes(user_info[0]['dominated'], 'big') \
+                    else '普通用户'
+            return token, username, role
         else:
             return None
 
@@ -95,7 +106,10 @@ class Kos(rpyc.Service):
             operator_info = users.get(
                 self.host, self.user, self.passwd, operator
             )
-            if operator_info and operator_info[0]['dominated']:
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
                 env_info = environments.get(
                     self.host, self.user, self.passwd, env
                 )
@@ -131,7 +145,10 @@ class Kos(rpyc.Service):
             operator_info = users.get(
                 self.host, self.user, self.passwd, operator
             )
-            if operator_info and operator_info[0]['dominated']:
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
                 result = 999
                 if write_host and user and passwd:
                     result1 = 0
@@ -169,6 +186,57 @@ class Kos(rpyc.Service):
                 self.host,
                 self.user,
                 self.passwd,
+                'environment',
+                operator, 1, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_create_user(
+        self, session_id, token,
+        username, passwd, user_permission
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = 999
+                # 是否存在重复的用户
+                dup_user = users.find_duplicate(
+                    self.host, self.user, self.passwd, username
+                )
+                if dup_user is None:
+                    result = 1  # 数据库错误
+                elif dup_user:
+                    return dup_user[0]['name']
+                else:
+                    # 插入数据库
+                    result = 0
+                    if users.create(
+                        self.host, self.user, self.passwd,
+                        username, passwd, user_permission
+                    ):
+                        result = 1
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'user',
                 operator, 1, 1 if result else 0
             )
         else:

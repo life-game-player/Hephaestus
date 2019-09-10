@@ -73,6 +73,21 @@ def execute(conn, sql, params):
         conn.close()
 
 
+def execute_many(conn, sql, params):
+    try:
+        with conn.cursor() as c:
+            c.executemany(sql, params)
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        logger.error(
+            "{} occured".format(type(e).__name__),
+            exc_info=True
+        )
+    finally:
+        conn.close()
+
+
 def seek_hera(conn):
     schema = query(
         conn,
@@ -129,18 +144,19 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
     )
     list_sql.append(sql)
     sql = (
+        "CREATE UNIQUE INDEX UK_name "
+        "ON gods(`name`)"
+    )
+    list_sql.append(sql)
+    sql = (
         "CREATE TABLE mnemosyne("
         "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+        "module VARCHAR(100) NOT NULL, "
         "operator BIGINT NOT NULL, "
         "operation INT NOT NULL, "
         "result INT NOT NULL, "
         "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
         ")"
-    )
-    list_sql.append(sql)
-    sql = (
-        "CREATE UNIQUE INDEX UK_name "
-        "ON gods(`name`)"
     )
     list_sql.append(sql)
     sql = (

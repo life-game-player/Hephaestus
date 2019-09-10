@@ -5,7 +5,7 @@ from views.window_dragable import WindowDragable
 from qss.qss_setter import QSSSetter
 
 
-class WindowConfig(WindowDragable):
+class WindowCreateUser(WindowDragable):
     def __init__(self, main_window):
         super().__init__()
 
@@ -21,8 +21,8 @@ class WindowConfig(WindowDragable):
         # 设置窗口大小
         self.window_min_width = 500
         self.window_max_width = 500
-        self.window_min_height = 300
-        self.window_max_height = 300
+        self.window_min_height = 400
+        self.window_max_height = 400
         self.setMinimumSize(self.window_min_width, self.window_min_height)
         self.setMaximumSize(self.window_max_width, self.window_max_height)
 
@@ -77,65 +77,51 @@ class WindowConfig(WindowDragable):
             self.window_min_height - 30
         )
 
-        # 表单组件
-        label_env = QtWidgets.QLabel('环境')
-        lineedit_env = QtWidgets.QLineEdit()
-        self.label_env_hint = QtWidgets.QLabel('必填字段')
-        self.label_env_hint.setObjectName('hint')
-        label_read_host = QtWidgets.QLabel('读库地址')
-        lineedit_read_host = QtWidgets.QLineEdit()
-        label_write_host = QtWidgets.QLabel('写库地址')
-        lineedit_write_host = QtWidgets.QLineEdit()
-        self.label_write_host_hint = QtWidgets.QLabel('必填字段')
-        self.label_write_host_hint.setObjectName('hint')
         label_username = QtWidgets.QLabel('用户名')
-        lineedit_username = QtWidgets.QLineEdit()
+        self.lineedit_username = QtWidgets.QLineEdit()
         self.label_username_hint = QtWidgets.QLabel('必填字段')
         self.label_username_hint.setObjectName('hint')
         label_passwd = QtWidgets.QLabel('密码')
-        lineedit_passwd = QtWidgets.QLineEdit()
-        lineedit_passwd.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.lineedit_passwd = QtWidgets.QLineEdit()
+        self.lineedit_passwd.setEchoMode(QtWidgets.QLineEdit.Password)
         self.label_passwd_hint = QtWidgets.QLabel('密码不能为空')
         self.label_passwd_hint.setObjectName('hint')
-        button_save = QtWidgets.QPushButton('测试连接并保存')
+        label_confirm_passwd = QtWidgets.QLabel('确认密码')
+        self.lineedit_confirm_passwd = QtWidgets.QLineEdit()
+        self.lineedit_confirm_passwd.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.label_confirm_passwd_hint = QtWidgets.QLabel('两次密码输入不一致')
+        self.label_confirm_passwd_hint.setObjectName('hint')
+        self.table_permission = QtWidgets.QTableWidget()
+        self.table_permission.setColumnCount(2)
+        self.table_permission.setHorizontalHeaderLabels(['环境', '用户权限'])
+        self.table_permission.setColumnWidth(0, 200)
+        self.table_permission.setColumnWidth(1, 150)
+        self.table_permission.horizontalHeader().setHighlightSections(False)
+        self.load_table_permission()
+        button_save = QtWidgets.QPushButton('创建')
         button_save.setObjectName('save')
         button_save.setFixedSize(140, 30)
-        button_save.clicked.connect(
-            lambda: self.save_connection(
-                lineedit_env.text(),
-                lineedit_read_host.text(),
-                lineedit_write_host.text(),
-                lineedit_username.text(),
-                lineedit_passwd.text()
-            )
-        )
+        button_save.clicked.connect(self.create_user)
 
         # 初始时提示不可见
-        self.label_env_hint.setVisible(False)
-        self.label_write_host_hint.setVisible(False)
         self.label_username_hint.setVisible(False)
         self.label_passwd_hint.setVisible(False)
+        self.label_confirm_passwd_hint.setVisible(False)
 
         # 布局管理
         layout = QtWidgets.QVBoxLayout()
         groupbox_form = QtWidgets.QGroupBox()
         layout_form = QtWidgets.QGridLayout()
-        #layout_form.setHorizontalSpacing(10)
-        #layout_form.setVerticalSpacing(10)
-        layout_form.addWidget(label_env, 1, 1)
-        layout_form.addWidget(lineedit_env, 1, 2)
-        layout_form.addWidget(self.label_env_hint, 1, 3)
-        layout_form.addWidget(label_read_host, 2, 1)
-        layout_form.addWidget(lineedit_read_host, 2, 2)
-        layout_form.addWidget(label_write_host, 3, 1)
-        layout_form.addWidget(lineedit_write_host, 3, 2)
-        layout_form.addWidget(self.label_write_host_hint, 3, 3)
-        layout_form.addWidget(label_username, 4, 1)
-        layout_form.addWidget(lineedit_username, 4, 2)
-        layout_form.addWidget(self.label_username_hint, 4, 3)
-        layout_form.addWidget(label_passwd, 5, 1)
-        layout_form.addWidget(lineedit_passwd, 5, 2)
-        layout_form.addWidget(self.label_passwd_hint, 5, 3)
+        layout_form.addWidget(label_username, 1, 1)
+        layout_form.addWidget(self.lineedit_username, 1, 2)
+        layout_form.addWidget(self.label_username_hint, 1, 3)
+        layout_form.addWidget(label_passwd, 2, 1)
+        layout_form.addWidget(self.lineedit_passwd, 2, 2)
+        layout_form.addWidget(self.label_passwd_hint, 2, 3)
+        layout_form.addWidget(label_confirm_passwd, 3, 1)
+        layout_form.addWidget(self.lineedit_confirm_passwd, 3, 2)
+        layout_form.addWidget(self.label_confirm_passwd_hint, 3, 3)
+        layout_form.addWidget(self.table_permission, 4, 1, 1, 3)
         groupbox_form.setLayout(layout_form)
         layout_button = QtWidgets.QHBoxLayout()
         layout_button.addStretch(1)
@@ -155,60 +141,71 @@ class WindowConfig(WindowDragable):
 
     def close_window(self):
         self.close()
-        self.main_window.children_windows['config'] = None
+        self.main_window.children_windows['create_user'] = None
 
-    def save_connection(
-        self, env, read_host, write_host, user, passwd
-    ):
-        is_form_valid = True
-        self.label_env_hint.setVisible(False)
-        self.label_write_host_hint.setVisible(False)
+    def load_table_permission(self):
+        self.table_permission.setRowCount(
+            len(self.main_window.enviroments)
+        )
+        for row, e in enumerate(self.main_window.enviroments):
+            item_env = QtWidgets.QTableWidgetItem(e)
+            combox_permission = QtWidgets.QComboBox()
+            combox_permission.addItem('无权限')
+            combox_permission.addItem('只读权限')
+            combox_permission.addItem('读写权限')
+            combox_permission.addItem('管理权限')
+            self.table_permission.setItem(row, 0, item_env)
+            self.table_permission.setCellWidget(row, 1, combox_permission)
+
+    def create_user(self):
         self.label_username_hint.setVisible(False)
         self.label_passwd_hint.setVisible(False)
-        if not env:
-            self.label_env_hint.setText('必填字段')
-            self.label_env_hint.setVisible(True)
-            is_form_valid = False
-        elif env == '<刷新环境配置......>':
-            self.label_env_hint.setText('环境名称不合法')
-            self.label_env_hint.setVisible(True)
-            is_form_valid = False
-        if not write_host:
-            self.label_write_host_hint.setVisible(True)
-            is_form_valid = False
-        if not user:
+        self.label_confirm_passwd_hint.setVisible(False)
+        username = self.lineedit_username.text()
+        passwd = self.lineedit_passwd.text()
+        confirm_passwd = self.lineedit_confirm_passwd.text()
+        if not username:
             self.label_username_hint.setVisible(True)
-            is_form_valid = False
         if not passwd:
             self.label_passwd_hint.setVisible(True)
-            is_form_valid = False
+        if passwd != confirm_passwd:
+            self.label_confirm_passwd_hint.setVisible(True)
+            passwd = None  # 只有两次输入密码匹配时passwd才有效，否则置空
 
-        if is_form_valid:
+        if username and passwd:
             result = 999
+
+            # 遍历TableWidget获取权限信息
+            user_permisson = list()
+            for row in range(self.table_permission.rowCount()):
+                up = dict()
+                up['env'] = self.table_permission.item(row, 0).text()
+                up['permission'] = self.table_permission.\
+                    cellWidget(row, 1).currentIndex()
+                user_permisson.append(up)
+
             try:
-                result = self.main_window.kos.root.create_env(
+                result = self.main_window.kos.root.create_user(
                     self.main_window.session_id,
                     self.main_window.token,
-                    env, read_host, write_host, user, passwd
+                    username,
+                    passwd,
+                    user_permisson
                 )
             except EOFError:
                 # 正在尝试重新连接服务器
                 pass
-            if result == 0:
+            if result == 0:  # 成功
                 self.close_window()
             elif result == 1:
-                self.label_info.setText('读库连接失败!')
-            elif result == 2:
-                self.label_info.setText('写库连接失败!')
-            elif result == 3:
                 self.label_info.setText('数据库发生错误!')
-            elif result == 4:
+            elif result == 2:
                 self.label_info.setText('权限不足!')
             elif result == -1:
                 # token过期
                 self.setEnabled(False)
                 self.main_window.login_window.show()
             elif isinstance(result, str):
-                self.label_info.setText('已存在重复的环境: {}'.format(result))
+                self.label_info.setText('已存在同名用户: {}'.format(result))
             else:
                 self.label_info.setText('未知错误!')

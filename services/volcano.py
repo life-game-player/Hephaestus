@@ -1,5 +1,6 @@
 import getpass
 import threading
+from datetime import datetime
 
 from rpyc.utils.server import ThreadedServer
 
@@ -19,6 +20,7 @@ def reset_option():
     special = input('欢迎回到您的世界!\n')
 
 
+print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 print('准备点燃火山...')
 host = input('请指定火山位置(默认为本地): ') or 'localhost'
 user = input('以谁的名义点燃? ')
