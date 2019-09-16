@@ -10,6 +10,7 @@ from models import localdb
 from views.window_config import WindowConfig
 from views.window_dragable import WindowDragable
 from views.window_create_user import WindowCreateUser
+from views.window_manage_user import WindowManageUser
 from clio import logger
 
 
@@ -27,6 +28,7 @@ class WindowMain(WindowDragable):
         self.children_windows = dict()
         self.children_windows['config'] = None
         self.children_windows['create_user'] = None
+        self.children_windows['manage_user'] = None
         self.tenants = dict()
         self.enviroments = list()
         self.username = username
@@ -302,7 +304,7 @@ class WindowMain(WindowDragable):
         )
         menu_users = self.menu_setting.addMenu('用户管理')
         menu_users.addAction('用户创建', self.show_create_user_window)
-        menu_users.addAction('用户修改')
+        menu_users.addAction('用户修改', self.show_modify_user_window)
         menu_envs = self.menu_setting.addMenu('环境配置')
         menu_envs.addAction('环境创建', self.show_config_window)
         menu_envs.addAction('环境修改', self.show_setting_window)
@@ -585,3 +587,11 @@ class WindowMain(WindowDragable):
             self.children_windows['create_user'] = create_user_window
         create_user_window.show()
         create_user_window.activateWindow()
+
+    def show_modify_user_window(self):
+        manage_user_window = self.children_windows['manage_user']
+        if not manage_user_window:
+            manage_user_window = WindowManageUser(self)
+            self.children_windows['manage_user'] = manage_user_window
+        manage_user_window.show()
+        manage_user_window.activateWindow()

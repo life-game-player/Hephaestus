@@ -8,6 +8,8 @@ def create(
     """
         Operation:
             1: Create
+            2: Modify
+            3: Query
 
         Result:
             0: Succeeded

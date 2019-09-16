@@ -1,0 +1,17 @@
+QWidget#head{
+    border-top-left-radius:5px;
+    border-top-right-radius:5px;
+    background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(202,12,22),stop:1 rgb(255,102,51));
+    border-left:1px solid black;
+    border-right:1px solid black;
+    border-top:1px solid black;
+}
+
+QWidget#body{
+    border-bottom-left-radius:5px;
+    border-bottom-right-radius:5px;
+    background-color:rgba(255, 255, 255, 100%);
+    border-left:1px solid black;
+    border-right:1px solid black;
+    border-bottom:1px solid black;
+}

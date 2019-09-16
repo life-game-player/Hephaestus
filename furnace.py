@@ -27,8 +27,6 @@ def main():
 
     window_login = WindowLogin(session_id, kos, width, height)
     window_login.show()
-    #window_main = WindowMain(width, height)
-    #window_main.show()
     sys.exit(app.exec_())
 
 

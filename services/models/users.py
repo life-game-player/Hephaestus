@@ -55,3 +55,11 @@ def create(
         return torch.execute_many(conn, sql, pl)
     else:
         return result
+
+
+def list(
+    db_host, db_user, db_passwd
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    sql = "SELECT id, `name`, dominated FROM gods"
+    return torch.query(conn, sql)
