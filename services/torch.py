@@ -137,6 +137,8 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
         "failures_since_last_login INT NOT NULL DEFAULT 0, "
         "failures_since_last_login_today INT NOT NULL DEFAULT 0, "
         "dominated BIT NOT NULL DEFAULT FALSE, "
+        "`status` INT NOT NULL DEFAULT 0 "
+        "COMMENT '0:Normal, 1:Disabled', "
         "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
         "modified TIMESTAMP NOT NULL "
         "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP "

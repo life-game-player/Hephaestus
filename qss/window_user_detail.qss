@@ -15,3 +15,17 @@ QWidget#body{
     border-right:1px solid black;
     border-bottom:1px solid black;
 }
+
+QLabel{
+    font-size:14px;
+    font-family:"微软雅黑";
+}
+
+QLabel#title{
+    font-weight:15px;
+}
+
+QLineEdit{
+    font-size:14px;
+    font-family:"微软雅黑";
+}

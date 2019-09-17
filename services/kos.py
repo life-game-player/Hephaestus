@@ -90,7 +90,7 @@ class Kos(rpyc.Service):
                     else '普通用户'
             return token, username, role
         else:
-            return None
+            return None, None, None
 
     def exposed_logout(self, session_id):
         removed = self.login_users.pop(session_id, None)

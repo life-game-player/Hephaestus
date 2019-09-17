@@ -424,6 +424,8 @@ class WindowMain(WindowDragable):
     def set_enabled_cascade(self, enabled):
         for k, v in self.children_windows.items():
             if v:
+                if k == 'manage_user':
+                    v.load_users()
                 v.setEnabled(enabled)
 
     def popup_menu_settings(self):

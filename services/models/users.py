@@ -18,7 +18,10 @@ def get(
     id
 ):
     conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
-    sql = "SELECT `name`, dominated FROM gods WHERE id = {}".format(id)
+    sql = (
+        "SELECT `name`, dominated FROM gods "
+        "WHERE id = {} AND `status` = 0"
+    ).format(id)
     return torch.query(conn, sql)
 
 

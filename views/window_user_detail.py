@@ -22,10 +22,10 @@ class WindowUserDetail(WindowDragable):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         # 设置窗口大小
-        self.window_min_width = 302
-        self.window_max_width = 302
-        self.window_min_height = 550
-        self.window_max_height = 550
+        self.window_min_width = 500
+        self.window_max_width = 500
+        self.window_min_height = 400
+        self.window_max_height = 400
         self.setMinimumSize(self.window_min_width, self.window_min_height)
         self.setMaximumSize(self.window_max_width, self.window_max_height)
 
@@ -59,14 +59,39 @@ class WindowUserDetail(WindowDragable):
             self.window_min_height - 30
         )
 
+        # 组件
         label_username = QtWidgets.QLabel('用户名')
+        label_username.setObjectName('title')
+        lineedit_username = QtWidgets.QLineEdit()
+        button_save_username = QtWidgets.QPushButton()
+        button_save_username.setFixedSize(30, 30)
+        button_unsave_username = QtWidgets.QPushButton()
+        button_unsave_username.setFixedSize(30, 30)
+        label_created = QtWidgets.QLabel('创建时间')
+        label_created.setObjectName('title')
+        label_created_value = QtWidgets.QLabel('2001-01-01 00:00:00')
+        label_modified = QtWidgets.QLabel('修改时间')
+        label_modified.setObjectName('title')
+        label_modified_value = QtWidgets.QLabel('2001-01-01 00:00:00')
 
+        # 布局管理
         layout = QtWidgets.QVBoxLayout()
         groupbox_form = QtWidgets.QGroupBox()
         layout_form = QtWidgets.QGridLayout()
+        layout_form.setSpacing(10)
+        layout_username = QtWidgets.QHBoxLayout()
         layout_form.addWidget(label_username, 1, 1)
+        layout_username.addWidget(lineedit_username)
+        layout_username.addWidget(button_save_username)
+        layout_username.addWidget(button_unsave_username)
+        layout_form.addLayout(layout_username, 1, 2)
+        layout_form.addWidget(label_created, 2, 1)
+        layout_form.addWidget(label_created_value, 2, 2)
+        layout_form.addWidget(label_modified, 3, 1)
+        layout_form.addWidget(label_modified_value, 3, 2)
         groupbox_form.setLayout(layout_form)
         layout.addWidget(groupbox_form)
+        layout.addStretch(1)
 
         self.widget_body.setLayout(layout)
 

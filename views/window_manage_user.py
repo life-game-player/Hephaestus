@@ -156,6 +156,9 @@ class WindowManageUser(WindowDragable):
                     layout_del_user.setContentsMargins(0, 0, 0, 0)
                     self.table_users.setCellWidget(row, 2, widget_del_user)
                 self.table_users.setRowHeight(row, 40)
+        elif isinstance(users, int) and users == -1:
+            self.setEnabled(False)
+            self.main_window.login_window.show()
 
     def show_user_detail(self, item):
         x = self.table_users.currentRow()
@@ -165,4 +168,4 @@ class WindowManageUser(WindowDragable):
             window_user_detail = WindowUserDetail(self)
             self.children_windows['user_detail'] = window_user_detail
         window_user_detail.show()
-        #window_user_detail.activateWindow()
+        window_user_detail.activateWindow()
