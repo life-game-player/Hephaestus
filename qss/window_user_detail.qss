@@ -35,6 +35,20 @@ QPushButton#reset{
     border:None;
 }
 
+QPushButton#lock{
+    background-image:url(images/lock.png);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+}
+
+QPushButton#unlock{
+    background-image:url(images/unlock.png);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+}
+
 QPushButton#permission{
     background-image:url(images/edit.png);
     background-position:center;

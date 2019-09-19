@@ -70,26 +70,38 @@ class Kos(rpyc.Service):
             return -1
 
     def exposed_login(self, session_id, user, passwd):
-        user = users.login(self.host, self.user, self.passwd, user, passwd)
-        if user and user[0]:
-            token = str(uuid.uuid4())
-            expired = datetime.datetime.now() +\
-                datetime.timedelta(seconds=self.session_period)
-            self.login_users[session_id] = {
-                'id': user[0],
-                'token': token,
-                'expired': expired
-            }
-            user_info = users.get(self.host, self.user, self.passwd, user[0])
-            username = None
-            role = None
-            if user_info:
-                username = user_info[0]['name']
-                role = '管理员' \
-                    if int.from_bytes(user_info[0]['dominated'], 'big') \
-                    else '普通用户'
-            return token, username, role
+        login_result = users.login(
+            self.host, self.user, self.passwd, user, passwd
+        )
+        if login_result:
+            if login_result[1]:
+                # 用户被禁用
+                return 'DISABLED', None, None
+            elif login_result[0]:
+                token = str(uuid.uuid4())
+                expired = datetime.datetime.now() +\
+                    datetime.timedelta(seconds=self.session_period)
+                self.login_users[session_id] = {
+                    'id': login_result[0],
+                    'token': token,
+                    'expired': expired
+                }
+                user_info = users.get(
+                    self.host, self.user, self.passwd, login_result[0]
+                )
+                username = None
+                role = None
+                if user_info:
+                    username = user_info[0]['name']
+                    role = '管理员' \
+                        if int.from_bytes(user_info[0]['dominated'], 'big') \
+                        else '普通用户'
+                return token, username, role
+            else:
+                # 密码不正确
+                return None, None, None
         else:
+            # 用户不存在
             return None, None, None
 
     def exposed_logout(self, session_id):

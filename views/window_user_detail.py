@@ -73,6 +73,17 @@ class WindowUserDetail(WindowDragable):
         self.button_reset_passwd = QtWidgets.QPushButton('重置密码')
         self.button_reset_passwd.setFixedSize(70, 30)
         self.button_reset_passwd.setObjectName('reset')
+        label_status = QtWidgets.QLabel('用户状态')
+        self.label_status_value = QtWidgets.QLabel()
+        self.label_status_value.setObjectName('value')
+        self.button_lock_user = QtWidgets.QPushButton()
+        self.button_lock_user.setObjectName('lock')
+        self.button_lock_user.clicked.connect(self.lock_user)
+        self.button_unlock_user = QtWidgets.QPushButton()
+        self.button_unlock_user.setObjectName('unlock')
+        self.button_unlock_user.clicked.connect(self.unlock_user)
+        self.button_lock_user.setFixedSize(24, 24)
+        self.button_unlock_user.setFixedSize(24, 24)
         label_created = QtWidgets.QLabel('创建时间')
         label_created.setObjectName('title')
         self.label_created_value = QtWidgets.QLabel()
@@ -116,10 +127,17 @@ class WindowUserDetail(WindowDragable):
         layout_username.addWidget(self.button_reset_passwd)
         layout_username.addStretch(1)
         layout_form.addLayout(layout_username, 1, 2)
-        layout_form.addWidget(label_created, 2, 1)
-        layout_form.addWidget(self.label_created_value, 2, 2)
-        layout_form.addWidget(label_modified, 3, 1)
-        layout_form.addWidget(self.label_modified_value, 3, 2)
+        layout_form.addWidget(label_status, 2, 1)
+        layout_userstatus = QtWidgets.QHBoxLayout()
+        layout_userstatus.addWidget(self.label_status_value)
+        layout_userstatus.addWidget(self.button_lock_user)
+        layout_userstatus.addWidget(self.button_unlock_user)
+        layout_userstatus.addStretch()
+        layout_form.addLayout(layout_userstatus, 2, 2)
+        layout_form.addWidget(label_created, 3, 1)
+        layout_form.addWidget(self.label_created_value, 3, 2)
+        layout_form.addWidget(label_modified, 4, 1)
+        layout_form.addWidget(self.label_modified_value, 4, 2)
         layout_edit_permission = QtWidgets.QVBoxLayout()
         layout_edit_permission.setSpacing(0)
         layout_edit_permission.setContentsMargins(0, 0, 0, 0)
@@ -172,6 +190,8 @@ class WindowUserDetail(WindowDragable):
 
     def load_user_info(self):
         self.lineedit_username.setText('Bill Guo')
+        user_status = 1
+        self.load_user_status(user_status)
         self.button_save_username.setVisible(False)
         self.button_unsave_username.setVisible(False)
         self.lineedit_username.setStyleSheet('QLineEdit{border:None}')
@@ -219,3 +239,26 @@ class WindowUserDetail(WindowDragable):
         self.lineedit_username.setStyleSheet('QLineEdit{border:None}')
         self.lineedit_username.setReadOnly(True)
         self.button_reset_passwd.setVisible(True)
+
+    def lock_user(self):
+        self.load_user_status(1)
+
+    def unlock_user(self):
+        self.load_user_status(0)
+
+    def load_user_status(self, user_status):
+        if user_status:
+            # 禁用状态
+            self.label_status_value.setStyleSheet(
+                "QLabel{background-color:rgba(255,0,0,50%);"
+                "border-radius:2px;}"
+            )
+        else:
+            # 正常状态
+            self.label_status_value.setStyleSheet(
+                "QLabel{background-color:rgba(51,204,0,50%);"
+                "border-radius:2px;}"
+            )
+        self.label_status_value.setText('已锁定' if user_status else '正常')
+        self.button_unlock_user.setVisible(True if user_status else False)
+        self.button_lock_user.setVisible(False if user_status else True)

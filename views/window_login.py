@@ -164,20 +164,23 @@ class WindowLogin(QtWidgets.QWidget):
                     )
                     return
                 if token:
-                    # 登录成功
-                    self.line_edit_passwd.clear()
-                    self.hide()
-                    if self.window_main:
-                        self.window_main.renew_token(token)
-                        self.window_main.refresh_env()
-                        self.window_main.setEnabled(True)
-                        self.window_main.set_enabled_cascade(True)
+                    if token == 'DISABLED':
+                        self.label_info.setText('此账户已被禁用!请联系管理员!')
                     else:
-                        self.window_main = WindowMain(
-                            self.session_id, token, self.kos, self,
-                            username, role
-                        )
-                        self.window_main.show()
+                        # 登录成功
+                        self.line_edit_passwd.clear()
+                        self.hide()
+                        if self.window_main:
+                            self.window_main.renew_token(token)
+                            self.window_main.refresh_env()
+                            self.window_main.setEnabled(True)
+                            self.window_main.set_enabled_cascade(True)
+                        else:
+                            self.window_main = WindowMain(
+                                self.session_id, token, self.kos, self,
+                                username, role
+                            )
+                            self.window_main.show()
                 else:
                     # 登录失败
                     self.label_info.setText('用户名密码不正确!')
