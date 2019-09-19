@@ -161,11 +161,13 @@ class WindowManageUser(WindowDragable):
             self.main_window.login_window.show()
 
     def show_user_detail(self, item):
-        x = self.table_users.currentRow()
-        print(x)
+        y = self.table_users.currentRow() * 40 + 30 + 30 + 25
+        window_pos = self.pos()
         window_user_detail = self.children_windows['user_detail']
         if not window_user_detail:
-            window_user_detail = WindowUserDetail(self)
+            window_user_detail = WindowUserDetail(
+                self, window_pos.x(), window_pos.y() + y
+            )
             self.children_windows['user_detail'] = window_user_detail
         window_user_detail.show()
         window_user_detail.activateWindow()

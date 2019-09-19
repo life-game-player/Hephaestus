@@ -1,15 +1,5 @@
-QWidget#head{
-    border-top-left-radius:5px;
-    border-top-right-radius:5px;
-    background:qlineargradient(spread:pad,x1:0,y1:0,x2:1,y2:0,stop:0 rgb(202,12,22),stop:1 rgb(255,102,51));
-    border-left:1px solid black;
-    border-right:1px solid black;
-    border-top:1px solid black;
-}
-
 QWidget#body{
-    border-bottom-left-radius:5px;
-    border-bottom-right-radius:5px;
+    border-radius:5px;
     background-color:rgba(255, 255, 255, 100%);
     border-left:1px solid black;
     border-right:1px solid black;
@@ -25,7 +15,82 @@ QLabel#title{
     font-weight:15px;
 }
 
+QLabel#value{
+    margin-left:10px;
+}
+
 QLineEdit{
     font-size:14px;
     font-family:"微软雅黑";
+    margin-left:10px;
+}
+
+QPushButton#reset{
+    font-size:12px;
+    font-family:"微软雅黑";
+    font-weight:bold;
+    color:white;
+    border-radius:5px;
+    background-color:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 rgba(255,102,51,80%),stop:1 rgba(255,102,51,80%));
+    border:None;
+}
+
+QPushButton#permission{
+    background-image:url(images/edit.png);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+    border-radius:15px;
+    background-color:rgba(204,204,204,50%);
+}
+
+QPushButton#confirm{
+    background-image:url(images/checked.png);
+    background-color:rgba(51,204,0,50%);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+    border-radius:15px;
+}
+
+QPushButton#cancel{
+    background-image:url(images/cancel.png);
+    background-color:rgba(255,0,0,50%);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+    border-radius:15px;
+}
+
+QPushButton#save_username{
+    background-image:url(images/checked.png);
+    background-color:rgba(51,204,0,50%);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+    border-radius:12px;
+}
+
+QPushButton#unsave_username{
+    background-image:url(images/cancel.png);
+    background-color:rgba(255,0,0,50%);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+    border-radius:12px;
+}
+
+QTableWidget{
+    background-color:white;
+    border:1px solid black;
+    gridline-color:lightgray;
+}
+
+QHeaderView::section{
+    background-color:rgb(255,102,51);
+    height:25px;
+    font-size:14px;
+    font-family:"微软雅黑";
+    font-weight:bold;
+    color:white;
 }
