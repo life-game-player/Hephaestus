@@ -3,6 +3,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 from views.window_dragable import WindowDragable
+from views.window_warning import WindowWarning
 from qss.qss_setter import QSSSetter
 
 
@@ -10,6 +11,7 @@ class WindowUserDetail(WindowDragable):
     def __init__(self, parent, user, x, y):
         super().__init__()
         self.parent = parent
+        self.children_windows = dict()
         self.user = user
 
         self.installEventFilter(self)
@@ -175,7 +177,13 @@ class WindowUserDetail(WindowDragable):
             source == self
         ):
             self.activated = not self.activated
-            if not self.activated:
+            if (
+                not self.activated and
+                (
+                    'warning' not in self.children_windows.keys() or
+                    self.children_windows['warning'] is None
+                )
+            ):
                 self.close()
                 self.parent.children_windows['user_detail'] = None
 
@@ -293,19 +301,32 @@ class WindowUserDetail(WindowDragable):
         self.update_user_status(0)
 
     def update_user_status(self, user_status):
-        result = self.parent.main_window.kos.root.update_user_status(
-            self.parent.main_window.session_id,
-            self.parent.main_window.token,
-            user_status,
-            self.user['id']
+        display_user = (self.user['name'][:10] + '...')\
+            if len(self.user['name']) > 10 else self.user['name']
+        warning_update_user_status = WindowWarning(self)
+        warning_update_user_status.set_info(
+            "确定要{}用户[{}]吗?".format(
+                '禁用' if user_status else '启用',
+                display_user
+            )
         )
-        if result:
-            if result == -1:
-                # token失效
-                self.parent.main_window.set_enabled_cascade(False)
-                self.parent.main_window.login_window.show()
-        else:
-            self.load_user_status(user_status)
+        self.children_windows['warning'] = warning_update_user_status
+        is_update_confirmed = warning_update_user_status.exec()
+        self.children_windows['warning'] = None
+        if is_update_confirmed:
+            result = self.parent.main_window.kos.root.update_user_status(
+                self.parent.main_window.session_id,
+                self.parent.main_window.token,
+                user_status,
+                self.user['id']
+            )
+            if result:
+                if result == -1:
+                    # token失效
+                    self.parent.main_window.set_enabled_cascade(False)
+                    self.parent.main_window.login_window.show()
+            else:
+                self.load_user_status(user_status)
 
     def load_user_status(self, user_status):
         if user_status:
