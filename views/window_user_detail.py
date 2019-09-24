@@ -210,8 +210,6 @@ class WindowUserDetail(WindowDragable):
 
     def load_user_info(self):
         self.lineedit_username.setText(self.user['name'])
-        print(self.user['status'])
-        print(self.user['id'])
         self.load_user_status(self.user['status'])
         self.button_save_username.setVisible(False)
         self.button_unsave_username.setVisible(False)
