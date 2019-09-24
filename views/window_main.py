@@ -424,9 +424,10 @@ class WindowMain(WindowDragable):
     def set_enabled_cascade(self, enabled):
         for k, v in self.children_windows.items():
             if v:
-                if k == 'manage_user':
+                if k == 'manage_user' and enabled:
                     v.load_users()
                 v.setEnabled(enabled)
+        self.setEnabled(enabled)
 
     def popup_menu_settings(self):
         pos = QtCore.QPoint()

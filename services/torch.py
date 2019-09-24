@@ -40,20 +40,38 @@ def query(conn, sql):
     return results
 
 
-def update(conn, list_sql):
+def execute_list(conn, list_sql):
     try:
         with conn.cursor() as c:
             for sql in list_sql:
                 c.execute(sql)
-                results = c.fetchall()
         conn.commit()
-        return results
+        return 0
     except Exception as e:
         conn.rollback()
         logger.error(
             "{} occured".format(type(e).__name__),
             exc_info=True
         )
+        return 1
+    finally:
+        conn.close()
+
+
+def call_proc_with_resultset(conn, sql):
+    try:
+        with conn.cursor() as c:
+            c.execute(sql)
+            resultset = c.fetchall()
+        conn.commit()
+        return 0, resultset
+    except Exception as e:
+        conn.rollback()
+        logger.error(
+            "{} occured".format(type(e).__name__),
+            exc_info=True
+        )
+        return 1, None
     finally:
         conn.close()
 
@@ -63,12 +81,14 @@ def execute(conn, sql, params):
         with conn.cursor() as c:
             c.execute(sql, params)
         conn.commit()
+        return 0
     except Exception as e:
         conn.rollback()
         logger.error(
             "{} occured".format(type(e).__name__),
             exc_info=True
         )
+        return 1
     finally:
         conn.close()
 
@@ -78,12 +98,14 @@ def execute_many(conn, sql, params):
         with conn.cursor() as c:
             c.executemany(sql, params)
         conn.commit()
+        return 0
     except Exception as e:
         conn.rollback()
         logger.error(
             "{} occured".format(type(e).__name__),
             exc_info=True
         )
+        return 1
     finally:
         conn.close()
 
@@ -181,7 +203,9 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
         "god_id BIGINT NOT NULL, "
         "access_level INT NOT NULL "
         "COMMENT '1: Tagrag(r), 2: Lord(w), 3: King(m)', "
-        "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
+        "created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
+        "ON UPDATE CURRENT_TIMESTAMP, "
+        "PRIMARY KEY(island_name, god_id)"
         ")"
     )
     list_sql.append(sql)
@@ -216,7 +240,7 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
         "SET @status = 0; "
         "SELECT id, secret, `status` INTO @id, @secret, @status FROM gods "
         "WHERE name = _user; "
-        "IF @id IS NOT NULL THEN "
+        "IF @id IS NOT NULL AND @status = 0 THEN "
         "UPDATE gods "
         "SET last_login = IF(@secret = @input_secret, NOW(3), last_login), "
         "failures_since_last_login = "
@@ -226,7 +250,7 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
         "0, failures_since_last_login_today), "
         "failures_since_last_login_today = "
         "IF(@secret = @input_secret, 0, failures_since_last_login_today + 1), "
-        "`status` = IF(failures_since_last_login_today > 6, 1, 0) "
+        "`status` = IF(failures_since_last_login_today > 6, 1, `status`) "
         "WHERE id = @id; "
         "END IF; "
         "SELECT IF(@secret = @input_secret, @id, NULL) AS id, "

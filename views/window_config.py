@@ -206,7 +206,7 @@ class WindowConfig(WindowDragable):
                 self.label_info.setText('权限不足!')
             elif result == -1:
                 # token过期
-                self.setEnabled(False)
+                self.main_window.set_enabled_cascade(False)
                 self.main_window.login_window.show()
             elif isinstance(result, str):
                 self.label_info.setText('已存在重复的环境: {}'.format(result))

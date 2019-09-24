@@ -10,6 +10,7 @@ from models import mysql
 from models import environments
 from models import mnemosyne
 from models import tenants
+from models import permissions
 
 
 class Kos(rpyc.Service):
@@ -130,6 +131,7 @@ class Kos(rpyc.Service):
                     self.host, self.user, self.passwd, env,
                     operator
                 )
+                print(env_info, operator)
             if env_info:
                 list_tenants = tenants.list(
                     env_info[0]['read_host'],
@@ -287,6 +289,204 @@ class Kos(rpyc.Service):
                 self.passwd,
                 'user',
                 operator, 3, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_get_user(
+        self, session_id, token, user_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = users.get(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    user_id
+                )
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'user',
+                operator, 3, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_get_permission_by_user(
+        self, session_id, token, user_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = permissions.get_by_user(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    user_id
+                )
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'permission',
+                operator, 3, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_update_permission_by_user(
+        self, session_id, token, user_permisson, user_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = permissions.update_by_user(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    user_permisson,
+                    user_id
+                )
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'permission',
+                operator, 2, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_update_user_status(
+        self, session_id, token, user_status, user_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = users.update_user_status(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    user_status,
+                    user_id
+                )
+                for k, v in list(self.login_users.items()):
+                    if v['id'] == user_id:
+                        del self.login_users[k]
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'user',
+                operator, 2, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_delete_user(
+        self, session_id, token, user_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = users.delete(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    user_id
+                )
+                for k, v in list(self.login_users.items()):
+                    if v['id'] == user_id:
+                        del self.login_users[k]
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'user',
+                operator, 4, 1 if result else 0
             )
         else:
             # token失效

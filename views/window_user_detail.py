@@ -7,9 +7,10 @@ from qss.qss_setter import QSSSetter
 
 
 class WindowUserDetail(WindowDragable):
-    def __init__(self, parent, x, y):
+    def __init__(self, parent, user, x, y):
         super().__init__()
         self.parent = parent
+        self.user = user
 
         self.installEventFilter(self)
         self.activated = False
@@ -24,8 +25,12 @@ class WindowUserDetail(WindowDragable):
         # 设置窗口大小
         self.window_min_width = 392
         self.window_max_width = 392
-        self.window_min_height = 370
-        self.window_max_height = 370
+        if int.from_bytes(self.user['dominated'], 'big') == 0:
+            self.window_min_height = 410
+            self.window_max_height = 410
+        else:
+            self.window_min_height = 205
+            self.window_max_height = 205
         self.setMinimumSize(self.window_min_width, self.window_min_height)
         self.setMaximumSize(self.window_max_width, self.window_max_height)
 
@@ -76,6 +81,9 @@ class WindowUserDetail(WindowDragable):
         label_status = QtWidgets.QLabel('用户状态')
         self.label_status_value = QtWidgets.QLabel()
         self.label_status_value.setObjectName('value')
+        label_last_login = QtWidgets.QLabel('上次登录时间')
+        self.label_last_login_value = QtWidgets.QLabel()
+        self.label_last_login_value.setObjectName('value')
         self.button_lock_user = QtWidgets.QPushButton()
         self.button_lock_user.setObjectName('lock')
         self.button_lock_user.clicked.connect(self.lock_user)
@@ -107,6 +115,7 @@ class WindowUserDetail(WindowDragable):
         self.button_confirm_edit = QtWidgets.QPushButton()
         self.button_confirm_edit.setFixedSize(30, 30)
         self.button_confirm_edit.setObjectName('confirm')
+        self.button_confirm_edit.clicked.connect(self.update_permission)
         self.button_cancel_edit = QtWidgets.QPushButton()
         self.button_cancel_edit.setFixedSize(30, 30)
         self.button_cancel_edit.setObjectName('cancel')
@@ -134,10 +143,12 @@ class WindowUserDetail(WindowDragable):
         layout_userstatus.addWidget(self.button_unlock_user)
         layout_userstatus.addStretch()
         layout_form.addLayout(layout_userstatus, 2, 2)
-        layout_form.addWidget(label_created, 3, 1)
-        layout_form.addWidget(self.label_created_value, 3, 2)
-        layout_form.addWidget(label_modified, 4, 1)
-        layout_form.addWidget(self.label_modified_value, 4, 2)
+        layout_form.addWidget(label_last_login, 3, 1)
+        layout_form.addWidget(self.label_last_login_value, 3, 2)
+        layout_form.addWidget(label_created, 4, 1)
+        layout_form.addWidget(self.label_created_value, 4, 2)
+        layout_form.addWidget(label_modified, 5, 1)
+        layout_form.addWidget(self.label_modified_value, 5, 2)
         layout_edit_permission = QtWidgets.QVBoxLayout()
         layout_edit_permission.setSpacing(0)
         layout_edit_permission.setContentsMargins(0, 0, 0, 0)
@@ -149,7 +160,8 @@ class WindowUserDetail(WindowDragable):
         layout_edit_button.addWidget(self.button_edit_permission)
         layout_edit_permission.addLayout(layout_edit_button)
         layout_edit_permission.addWidget(self.table_permission)
-        layout_form.addLayout(layout_edit_permission, 5, 1, 1, 2)
+        if int.from_bytes(self.user['dominated'], 'big') == 0:
+            layout_form.addLayout(layout_edit_permission, 6, 1, 1, 2)
         groupbox_form.setLayout(layout_form)
         layout.addStretch(1)
         layout.addWidget(groupbox_form)
@@ -189,20 +201,29 @@ class WindowUserDetail(WindowDragable):
         return super().eventFilter(source, event)
 
     def load_user_info(self):
-        self.lineedit_username.setText('Bill Guo')
-        user_status = 1
-        self.load_user_status(user_status)
+        self.lineedit_username.setText(self.user['name'])
+        print(self.user['status'])
+        print(self.user['id'])
+        self.load_user_status(self.user['status'])
         self.button_save_username.setVisible(False)
         self.button_unsave_username.setVisible(False)
         self.lineedit_username.setStyleSheet('QLineEdit{border:None}')
         self.lineedit_username.setReadOnly(True)
-        self.label_created_value.setText('2001-01-01 00:00:00')
-        self.label_modified_value.setText('2001-01-01 00:00:00')
+        self.label_last_login_value.setText(
+            str(self.user['last_login'])
+        )
+        self.label_created_value.setText(
+            str(self.user['created'])
+        )
+        self.label_modified_value.setText(
+            str(self.user['modified'])
+        )
         self.table_permission.setEnabled(False)
         self.table_permission.setRowCount(
             len(self.parent.main_window.enviroments)
         )
-        self.load_permission_table()
+        if int.from_bytes(self.user['dominated'], 'big') == 0:
+            self.load_permission_table()
 
     def edit_permission(self):
         # 只读->编辑
@@ -221,19 +242,44 @@ class WindowUserDetail(WindowDragable):
 
     def load_permission_table(self):
         self.table_permission.clearContents()
-        for row, e in enumerate(self.parent.main_window.enviroments):
-            item_env = QtWidgets.QTableWidgetItem(e)
-            item_env.setFlags(QtCore.Qt.ItemIsEnabled)
-            combox_permission = QtWidgets.QComboBox()
-            combox_permission.addItem('无权限')
-            combox_permission.addItem('只读权限')
-            combox_permission.addItem('读写权限')
-            combox_permission.addItem('管理权限')
-            self.table_permission.setItem(row, 0, item_env)
-            self.table_permission.setCellWidget(row, 1, combox_permission)
+        permission_results = self.parent.main_window.kos.root.\
+            get_permission_by_user(
+                self.parent.main_window.session_id,
+                self.parent.main_window.token,
+                self.user['id']
+            )
+        if (
+            isinstance(permission_results, list) or
+            isinstance(permission_results, tuple)
+        ):
+            for row, e in enumerate(self.parent.main_window.enviroments):
+                item_env = QtWidgets.QTableWidgetItem(e)
+                item_env.setFlags(QtCore.Qt.ItemIsEnabled)
+                combox_permission = QtWidgets.QComboBox()
+                combox_permission.addItem('无权限')
+                combox_permission.addItem('只读权限')
+                combox_permission.addItem('读写权限')
+                combox_permission.addItem('管理权限')
+                if permission_results:
+                    for p in permission_results:
+                        if e == p['island_name']:
+                            combox_permission.setCurrentIndex(
+                                p['access_level']
+                            )
+                            break
+                    else:
+                        combox_permission.setCurrentIndex(0)
+                else:
+                    combox_permission.setCurrentIndex(0)
+                self.table_permission.setItem(row, 0, item_env)
+                self.table_permission.setCellWidget(row, 1, combox_permission)
+        elif isinstance(permission_results, int) and permission_results == -1:
+            # token过期
+            self.parent.main_window.set_enabled_cascade(False)
+            self.parent.main_window.login_window.show()
 
     def unsave_username(self):
-        self.lineedit_username.setText('Bill Guo')
+        self.lineedit_username.setText(self.user['name'])
         self.button_save_username.setVisible(False)
         self.button_unsave_username.setVisible(False)
         self.lineedit_username.setStyleSheet('QLineEdit{border:None}')
@@ -241,20 +287,35 @@ class WindowUserDetail(WindowDragable):
         self.button_reset_passwd.setVisible(True)
 
     def lock_user(self):
-        self.load_user_status(1)
+        self.update_user_status(1)
 
     def unlock_user(self):
-        self.load_user_status(0)
+        self.update_user_status(0)
+
+    def update_user_status(self, user_status):
+        result = self.parent.main_window.kos.root.update_user_status(
+            self.parent.main_window.session_id,
+            self.parent.main_window.token,
+            user_status,
+            self.user['id']
+        )
+        if result:
+            if result == -1:
+                # token失效
+                self.parent.main_window.set_enabled_cascade(False)
+                self.parent.main_window.login_window.show()
+        else:
+            self.load_user_status(user_status)
 
     def load_user_status(self, user_status):
         if user_status:
-            # 禁用状态
+            # 禁用
             self.label_status_value.setStyleSheet(
                 "QLabel{background-color:rgba(255,0,0,50%);"
                 "border-radius:2px;}"
             )
         else:
-            # 正常状态
+            # 启用
             self.label_status_value.setStyleSheet(
                 "QLabel{background-color:rgba(51,204,0,50%);"
                 "border-radius:2px;}"
@@ -262,3 +323,26 @@ class WindowUserDetail(WindowDragable):
         self.label_status_value.setText('已锁定' if user_status else '正常')
         self.button_unlock_user.setVisible(True if user_status else False)
         self.button_lock_user.setVisible(False if user_status else True)
+
+    def update_permission(self):
+        # 遍历TableWidget获取权限信息
+        user_permisson = list()
+        for row in range(self.table_permission.rowCount()):
+            up = dict()
+            up['env'] = self.table_permission.item(row, 0).text()
+            up['permission'] = self.table_permission.\
+                cellWidget(row, 1).currentIndex()
+            user_permisson.append(up)
+
+        result = self.parent.main_window.kos.root.update_permission_by_user(
+            self.parent.main_window.session_id,
+            self.parent.main_window.token,
+            user_permisson,
+            self.user['id']
+        )
+        self.cancel_edit()  # 刷新权限表并取消编辑状态
+        print(result)
+        if result and result == -1:
+            # token失效
+            self.parent.main_window.set_enabled_cascade(False)
+            self.parent.main_window.login_window.show()

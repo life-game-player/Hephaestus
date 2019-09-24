@@ -61,15 +61,16 @@ def get(
     conn = torch.connect(host, user, passwd, 'hephaestus')
     if curr_user_id:
         sql = (
-            "SELECT `name`, read_host, user, "
-            "CBC_DECRYPT(guid, secret, vector) AS passwd "
-            "FROM islands "
+            "SELECT i.`name`, i.read_host, i.user, "
+            "CBC_DECRYPT(i.guid, i.secret, i.vector) AS passwd "
+            "FROM islands i "
             "WHERE `name` = '{}' "
             "AND EXISTS(SELECT 1 "
             "FROM permission p "
             "WHERE i.name = p.island_name "
+            "AND p.god_id = {} "
             "AND p.access_level >= 1) "
-        ).format(env)
+        ).format(env, curr_user_id)
     else:
         sql = (
             "SELECT `name`, read_host, user, "
@@ -91,9 +92,10 @@ def list(
             "WHERE EXISTS(SELECT 1 "
             "FROM permission p "
             "WHERE i.name = p.island_name "
+            "AND p.god_id = {} "
             "AND p.access_level >= 1) "
             "ORDER BY Created"
-        )
+        ).format(curr_user_id)
     else:
         sql = "SELECT `name` FROM islands ORDER BY Created"
     return torch.query(conn, sql)

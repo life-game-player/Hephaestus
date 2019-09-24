@@ -9,8 +9,8 @@ def login(
     sql = (
         "CALL login('{}', '{}')"
     ).format(user, passwd)
-    results = torch.update(conn, eval('["' + sql + '"]'))
-    return results[0] if results else None
+    result, resultset = torch.call_proc_with_resultset(conn, sql)
+    return resultset[0] if resultset else None
 
 
 def get(
@@ -19,8 +19,10 @@ def get(
 ):
     conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
     sql = (
-        "SELECT `name`, dominated FROM gods "
-        "WHERE id = {} AND `status` = 0"
+        "SELECT `id`, `name`, dominated, `status`, "
+        "created, modified, last_login "
+        "FROM gods "
+        "WHERE id = {}"
     ).format(id)
     return torch.query(conn, sql)
 
@@ -66,3 +68,25 @@ def list(
     conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
     sql = "SELECT id, `name`, dominated FROM gods"
     return torch.query(conn, sql)
+
+
+def update_user_status(
+    db_host, db_user, db_passwd,
+    user_status, user_id
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    sql = (
+        "UPDATE gods SET `status` = %s "
+        "WHERE id = %s"
+    )
+    return torch.execute(conn, sql, (user_status, user_id))
+
+
+def delete(
+    db_host, db_user, db_passwd, user_id
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    sql = (
+        "DELETE FROM gods WHERE id = %s"
+    )
+    return torch.execute(conn, sql, (user_id,))

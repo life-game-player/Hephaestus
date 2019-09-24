@@ -10,6 +10,7 @@ def create(
             1: Create
             2: Modify
             3: Query
+            4: Delete
 
         Result:
             0: Succeeded
@@ -21,4 +22,4 @@ def create(
         "INSERT INTO mnemosyne(module, operator, operation, result) "
         "VALUES('{}', {}, {}, {})".format(module, operator, operation, result)
     )
-    torch.update(conn, list_sql)
+    torch.execute_list(conn, list_sql)

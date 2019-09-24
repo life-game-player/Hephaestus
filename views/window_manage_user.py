@@ -4,6 +4,8 @@ from PyQt5 import QtGui
 
 from views.window_dragable import WindowDragable
 from views.window_user_detail import WindowUserDetail
+from views.window_warning import WindowWarning
+from views.window_error import WindowError
 from qss.qss_setter import QSSSetter
 
 
@@ -137,6 +139,7 @@ class WindowManageUser(WindowDragable):
             self.main_window.token
         )
         if isinstance(users, list) and users:
+            self.table_users.clearContents()
             self.table_users.setRowCount(len(users))
             for row, u in enumerate(users):
                 item_user_id = QtWidgets.QTableWidgetItem(str(u['id']))
@@ -149,6 +152,9 @@ class WindowManageUser(WindowDragable):
                     button_del_user = QtWidgets.QPushButton()
                     button_del_user.setObjectName('del_user')
                     button_del_user.setFixedSize(30, 30)
+                    button_del_user.clicked.connect(
+                        lambda: self.del_user(u['id'], u['name'])
+                    )
                     widget_del_user = QtWidgets.QWidget()
                     layout_del_user = QtWidgets.QHBoxLayout(widget_del_user)
                     layout_del_user.addWidget(button_del_user)
@@ -161,13 +167,49 @@ class WindowManageUser(WindowDragable):
             self.main_window.login_window.show()
 
     def show_user_detail(self, item):
-        y = self.table_users.currentRow() * 40 + 30 + 30 + 25
+        curr_row = self.table_users.currentRow()
+        y = curr_row * 40 + 30 + 30 + 25
         window_pos = self.pos()
         window_user_detail = self.children_windows['user_detail']
-        if not window_user_detail:
+        query_user = self.main_window.kos.root.get_user(
+            self.main_window.session_id,
+            self.main_window.token,
+            int(self.table_users.item(curr_row, 0).text())
+        )
+        if isinstance(query_user, list) and query_user:
             window_user_detail = WindowUserDetail(
-                self, window_pos.x(), window_pos.y() + y
+                self,
+                query_user[0],
+                window_pos.x(), window_pos.y() + y
             )
             self.children_windows['user_detail'] = window_user_detail
-        window_user_detail.show()
-        window_user_detail.activateWindow()
+            window_user_detail.show()
+            window_user_detail.activateWindow()
+        elif isinstance(query_user, int) and query_user == -1:
+            # token过期
+            self.main_window.set_enabled_cascade(False)
+            self.main_window.login_window.show()
+
+    def del_user(self, user_id, user_name):
+        warning_del_user = WindowWarning(self)
+        warning_del_user.set_info("确定要删除用户[{}]吗?".format(
+            (user_name[:10] + '...') if len(user_name) > 10 else user_name)
+        )
+        is_confirmed = warning_del_user.exec()
+        if is_confirmed:
+            del_result = self.main_window.kos.root.delete_user(
+                self.main_window.session_id,
+                self.main_window.token,
+                user_id
+            )
+            if del_result == 0:
+                self.load_users()
+            elif del_result == -1:
+                # token过期
+                self.main_window.set_enabled_cascade(False)
+                self.main_window.login_window.show()
+            else:
+                # 删除失败
+                error_del_user = WindowError(self)
+                error_del_user.set_info('用户删除失败!')
+                error_del_user.exec()

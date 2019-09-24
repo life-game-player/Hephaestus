@@ -1,0 +1,17 @@
+QLabel#info{
+    font-size:14px;
+    font-family:"微软雅黑";
+}
+
+QWidget#warning{
+    background-color:white;
+    border:1px solid gray;
+    border-radius:2px;
+}
+
+QLabel#icon{
+    background-image:url(images/warning.png);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+}
