@@ -8,6 +8,8 @@ from views.window_warning import WindowWarning
 from views.window_error import WindowError
 from qss.qss_setter import QSSSetter
 
+import re
+
 
 class WindowManageUser(WindowDragable):
     def __init__(self, main_window):
@@ -88,10 +90,11 @@ class WindowManageUser(WindowDragable):
         button_search.setObjectName('search_icon')
         button_search.setFixedSize(30, 30)
         button_search.setShortcut('Return')
-        lineedit_search = QtWidgets.QLineEdit()
-        lineedit_search.setPlaceholderText('用户搜索')
-        lineedit_search.setObjectName('search')
-        lineedit_search.setFixedSize(self.window_min_width - 30, 30)
+        button_search.clicked.connect(self.search_user)
+        self.lineedit_search = QtWidgets.QLineEdit()
+        self.lineedit_search.setPlaceholderText('用户搜索')
+        self.lineedit_search.setObjectName('search')
+        self.lineedit_search.setFixedSize(self.window_min_width - 30, 30)
         self.table_users = QtWidgets.QTableWidget()
         self.table_users.setSelectionBehavior(
             QtWidgets.QAbstractItemView.SelectRows
@@ -118,7 +121,7 @@ class WindowManageUser(WindowDragable):
         layout_h.setSpacing(0)
         layout_h.setContentsMargins(0, 0, 0, 0)
         layout_h.addWidget(button_search)
-        layout_h.addWidget(lineedit_search)
+        layout_h.addWidget(self.lineedit_search)
         self.table_users.setObjectName('users')
         layout.addLayout(layout_h)
         layout.addWidget(self.table_users)
@@ -213,3 +216,21 @@ class WindowManageUser(WindowDragable):
                 error_del_user = WindowError(self)
                 error_del_user.set_info('用户删除失败!')
                 error_del_user.exec()
+
+    def search_user(self):
+        focusing_widget = QtWidgets.QApplication.focusWidget()
+        keyword = self.lineedit_search.text()
+        if (
+            not focusing_widget.objectName() in
+            ['search', 'search_icon']
+        ):
+            return  # 避免快捷键的不当触发
+        if keyword:
+            user_search = re.compile(r'{}'.format(keyword))
+            for row in range(self.table_users.rowCount()):
+                curr_user = self.table_users.item(row, 1).text()
+                if not user_search.search(curr_user):
+                    self.table_users.hideRow(row)
+        else:  # 恢复默认显示
+            for row in range(self.table_users.rowCount()):
+                self.table_users.showRow(row)
