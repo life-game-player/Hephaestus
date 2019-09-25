@@ -118,6 +118,7 @@ class WindowLogin(QtWidgets.QWidget):
         self.line_edit_passwd.setPlaceholderText('密码')
         button_login = QtWidgets.QPushButton('登录')
         button_login.setObjectName('login')
+        button_login.setShortcut('Return')
         button_login.setFixedSize(280, 30)
         button_login.clicked.connect(
             lambda: self.login(
