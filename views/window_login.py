@@ -184,3 +184,7 @@ class WindowLogin(QtWidgets.QWidget):
                 else:
                     # 登录失败
                     self.label_info.setText('用户名密码不正确!')
+
+    def show(self):
+        self.label_info.setText('')
+        super().show()
