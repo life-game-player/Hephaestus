@@ -1,0 +1,36 @@
+QWidget#body{
+    border-radius:5px;
+    background-color:rgba(255, 255, 255, 100%);
+    border-left:1px solid black;
+    border-right:1px solid black;
+    border-bottom:1px solid black;
+}
+
+QLabel{
+    font-size:14px;
+    font-family:"微软雅黑";
+}
+
+QLabel#title{
+    font-weight:15px;
+}
+
+QLabel#value{
+    margin-left:10px;
+}
+
+QLineEdit{
+    font-size:14px;
+    font-family:"微软雅黑";
+    margin-left:10px;
+}
+
+QPushButton#update{
+    font-size:12px;
+    font-family:"微软雅黑";
+    font-weight:bold;
+    color:white;
+    border-radius:5px;
+    background-color:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 rgba(255,102,51,80%),stop:1 rgba(255,102,51,80%));
+    border:None;
+}

@@ -37,7 +37,7 @@ QWidget#body{
     border-right:1px solid black;
 }
 
-QLabel#user_photo{
+QPushButton#user_photo{
     background-color:white;
     border-radius:40px;
 }

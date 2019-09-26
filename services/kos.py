@@ -519,8 +519,80 @@ class Kos(rpyc.Service):
                     user_id,
                     passwd
                 )
+                for k, v in list(self.login_users.items()):
+                    if v['id'] == user_id:
+                        del self.login_users[k]
             else:
                 result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'user',
+                operator, 2, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_get_current_user(
+        self, session_id, token
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if operator_info:
+                result = operator_info[0]
+            else:
+                result = 2  # 出错
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'user',
+                operator, 3, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_update_own_passwd(
+        self, session_id, token, passwd
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if operator_info:
+                result = users.update_passwd(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    operator_info[0]['id'],
+                    passwd
+                )
+                for k, v in list(self.login_users.items()):
+                    if v['id'] == operator_info[0]['id']:
+                        del self.login_users[k]
+            else:
+                result = 2  # 出错
             mnemosyne.create(
                 self.host,
                 self.user,

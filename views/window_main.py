@@ -11,6 +11,7 @@ from views.window_config import WindowConfig
 from views.window_dragable import WindowDragable
 from views.window_create_user import WindowCreateUser
 from views.window_manage_user import WindowManageUser
+from views.window_user_profile import WindowUserProfile
 from clio import logger
 
 
@@ -112,9 +113,10 @@ class WindowMain(WindowDragable):
         self.widget_head.setFixedSize(self.window_min_width, 120)
 
         # 用户头像和用户信息组件
-        label_photo = QtWidgets.QLabel()
-        label_photo.setFixedSize(80, 80)
-        label_photo.setObjectName('user_photo')
+        button_photo = QtWidgets.QPushButton()
+        button_photo.setFixedSize(80, 80)
+        button_photo.setObjectName('user_photo')
+        button_photo.clicked.connect(self.show_profile)
         label_username = QtWidgets.QLabel(self.username)
         label_username.setObjectName('user_name')
         label_userinfo = QtWidgets.QLabel(self.role)
@@ -125,7 +127,7 @@ class WindowMain(WindowDragable):
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addStretch(1)
-        layout.addWidget(label_photo)
+        layout.addWidget(button_photo)
         layout_v = QtWidgets.QVBoxLayout()
         layout_v.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -598,3 +600,19 @@ class WindowMain(WindowDragable):
             self.children_windows['manage_user'] = manage_user_window
         manage_user_window.show()
         manage_user_window.activateWindow()
+
+    def show_profile(self):
+        current_user = self.kos.root.get_current_user(
+            self.session_id, self.token
+        )
+        if current_user and isinstance(current_user, dict):
+            # 成功获取当前用户
+            profile_window = WindowUserProfile(
+                self, current_user
+            )
+            self.children_windows['profile'] = profile_window
+            profile_window.show()
+        elif isinstance(current_user, int) and current_user == -1:
+            # Token失效
+            self.setEnabled(False)
+            self.login_window.show()
