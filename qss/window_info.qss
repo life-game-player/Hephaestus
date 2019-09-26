@@ -4,14 +4,23 @@ QLabel#info{
     border:None;
 }
 
-QWidget#warning{
+QLabel#important{
+    font-size:14px;
+    font-family:"微软雅黑";
+    border:None;
+    background-color:rgb(255,153,51);
+    color:white;
+    border-radius:2px;
+}
+
+QWidget#information{
     background-color:white;
     border:1px solid gray;
     border-radius:2px;
 }
 
 QLabel#icon{
-    background-image:url(images/warning.png);
+    background-image:url(images/info.png);
     background-position:center;
     background-repeat:none;
     border:None;

@@ -76,10 +76,13 @@ def call_proc_with_resultset(conn, sql):
         conn.close()
 
 
-def execute(conn, sql, params):
+def execute(conn, sql, params=None):
     try:
         with conn.cursor() as c:
-            c.execute(sql, params)
+            if params:
+                c.execute(sql, params)
+            else:
+                c.execute(sql)
         conn.commit()
         return 0
     except Exception as e:
@@ -131,8 +134,8 @@ def reset_hera(host, user, password, dominated_pwd):
         "UPDATE gods "
         "SET secret = SHA2('{}', 256)"
         "WHERE dominated = TRUE"
-    )
-    update(conn, eval('["' + sql + '"]'))
+    ).format(dominated_pwd)
+    execute(conn, sql)
     conn = connect(host, user, password, 'hephaestus')
     result = query(
         conn,
@@ -147,7 +150,7 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
         "CREATE DATABASE hephaestus "
         "DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci"
     )
-    update(conn, eval('["' + sql + '"]'))
+    execute(conn, sql)
     conn = connect(host, user, password, 'hephaestus')
     list_sql = list()
     sql = (
@@ -263,4 +266,4 @@ def set_fire(host, user, password, dominated_user, dominated_pwd):
         "VALUES('{}', SHA2('{}', 256), TRUE)"
     ).format(dominated_user, dominated_pwd)
     list_sql.append(sql)
-    update(conn, list_sql)
+    execute_list(conn, list_sql)

@@ -109,3 +109,14 @@ def delete(
         "DELETE FROM gods WHERE id = %s"
     )
     return torch.execute(conn, sql, (user_id,))
+
+
+def update_passwd(
+    db_host, db_user, db_passwd, user_id, passwd
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    sql = (
+        "UPDATE gods SET secret = SHA2(%s, 256) "
+        "WHERE id = %s"
+    )
+    return torch.execute(conn, sql, (passwd, user_id))

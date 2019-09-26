@@ -1,6 +1,7 @@
 QLabel#info{
     font-size:14px;
     font-family:"微软雅黑";
+    border:None;
 }
 
 QWidget#error{

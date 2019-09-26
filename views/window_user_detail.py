@@ -4,7 +4,12 @@ from PyQt5 import QtGui
 
 from views.window_dragable import WindowDragable
 from views.window_warning import WindowWarning
+from views.window_info import WindowInfo
+from views.window_error import WindowError
 from qss.qss_setter import QSSSetter
+
+import string
+import random
 
 
 class WindowUserDetail(WindowDragable):
@@ -31,8 +36,8 @@ class WindowUserDetail(WindowDragable):
             self.window_min_height = 410
             self.window_max_height = 410
         else:
-            self.window_min_height = 205
-            self.window_max_height = 205
+            self.window_min_height = 155
+            self.window_max_height = 155
         self.setMinimumSize(self.window_min_width, self.window_min_height)
         self.setMaximumSize(self.window_max_width, self.window_max_height)
 
@@ -45,6 +50,7 @@ class WindowUserDetail(WindowDragable):
         self.layout_main.setSpacing(0)
         self.layout_main.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout_main)
+
         self.setGeometry(
             x - self.window_min_width,
             y,
@@ -78,6 +84,7 @@ class WindowUserDetail(WindowDragable):
         self.button_unsave_username.setObjectName('unsave_username')
         self.button_unsave_username.clicked.connect(self.unsave_username)
         self.button_reset_passwd = QtWidgets.QPushButton('重置密码')
+        self.button_reset_passwd.clicked.connect(self.reset_passwd)
         self.button_reset_passwd.setFixedSize(70, 30)
         self.button_reset_passwd.setObjectName('reset')
         label_status = QtWidgets.QLabel('用户状态')
@@ -86,10 +93,10 @@ class WindowUserDetail(WindowDragable):
         label_last_login = QtWidgets.QLabel('上次登录时间')
         self.label_last_login_value = QtWidgets.QLabel()
         self.label_last_login_value.setObjectName('value')
-        self.button_lock_user = QtWidgets.QPushButton()
+        self.button_lock_user = QtWidgets.QPushButton(self)
         self.button_lock_user.setObjectName('lock')
         self.button_lock_user.clicked.connect(self.lock_user)
-        self.button_unlock_user = QtWidgets.QPushButton()
+        self.button_unlock_user = QtWidgets.QPushButton(self)
         self.button_unlock_user.setObjectName('unlock')
         self.button_unlock_user.clicked.connect(self.unlock_user)
         self.button_lock_user.setFixedSize(24, 24)
@@ -135,16 +142,18 @@ class WindowUserDetail(WindowDragable):
         layout_username.addWidget(self.lineedit_username)
         layout_username.addWidget(self.button_save_username)
         layout_username.addWidget(self.button_unsave_username)
-        layout_username.addWidget(self.button_reset_passwd)
+        if int.from_bytes(self.user['dominated'], 'big') == 0:
+            layout_username.addWidget(self.button_reset_passwd)
         layout_username.addStretch(1)
         layout_form.addLayout(layout_username, 1, 2)
-        layout_form.addWidget(label_status, 2, 1)
         layout_userstatus = QtWidgets.QHBoxLayout()
         layout_userstatus.addWidget(self.label_status_value)
         layout_userstatus.addWidget(self.button_lock_user)
         layout_userstatus.addWidget(self.button_unlock_user)
         layout_userstatus.addStretch()
-        layout_form.addLayout(layout_userstatus, 2, 2)
+        if int.from_bytes(self.user['dominated'], 'big') == 0:
+            layout_form.addWidget(label_status, 2, 1)
+            layout_form.addLayout(layout_userstatus, 2, 2)
         layout_form.addWidget(label_last_login, 3, 1)
         layout_form.addWidget(self.label_last_login_value, 3, 2)
         layout_form.addWidget(label_created, 4, 1)
@@ -365,3 +374,51 @@ class WindowUserDetail(WindowDragable):
             # token失效
             self.parent.main_window.set_enabled_cascade(False)
             self.parent.main_window.login_window.show()
+
+    def reset_passwd(self):
+        display_user = (self.user['name'][:10] + '...')\
+            if len(self.user['name']) > 10 else self.user['name']
+        warning_reset_passwd = WindowWarning(self)
+        warning_reset_passwd.set_info(
+            '确定要为用户[{}]生成新密码吗?'.format(display_user)
+        )
+        self.children_windows['warning'] = warning_reset_passwd
+        confirm_reset_passwd = warning_reset_passwd.exec()
+        self.children_windows['warning'] = None
+        if confirm_reset_passwd:
+            # 生成8位随机密码
+            passwd_chars = ''.join(
+                (string.ascii_letters, string.digits, '!@#$%^&*')
+            )
+            passwd = ''
+            for i in range(8):
+                passwd = ''.join((passwd, random.choice(passwd_chars)))
+
+            # 修改用户密码
+            update_result = self.parent.main_window.kos.root.\
+                update_user_passwd(
+                    self.parent.main_window.session_id,
+                    self.parent.main_window.token,
+                    self.user['id'],
+                    passwd
+                )
+            if update_result:
+                if update_result == -1:
+                    # token失效
+                    self.parent.main_window.set_enabled_cascade(False)
+                    self.parent.main_window.login_window.show()
+                else:
+                    error_reset_passwd = WindowError(self)
+                    error_reset_passwd.set_info('重置密码失败!')
+                    self.children_windows['warning'] = error_reset_passwd
+                    error_reset_passwd.exec()
+                    self.children_windows['warning'] = None
+            else:
+                info_reset_passwd = WindowInfo(self)
+                info_reset_passwd.set_info(
+                    '[{}]的新密码为'.format(display_user)
+                )
+                info_reset_passwd.set_selectable_info(passwd)
+                self.children_windows['warning'] = info_reset_passwd
+                info_reset_passwd.exec()
+                self.children_windows['warning'] = None
