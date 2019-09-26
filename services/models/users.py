@@ -85,7 +85,10 @@ def list(
     db_host, db_user, db_passwd
 ):
     conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
-    sql = "SELECT id, `name`, dominated FROM gods"
+    sql = (
+        "SELECT id, `name`, dominated FROM gods "
+        "WHERE dominated = FALSE"
+    )
     return torch.query(conn, sql)
 
 

@@ -32,12 +32,8 @@ class WindowUserDetail(WindowDragable):
         # 设置窗口大小
         self.window_min_width = 392
         self.window_max_width = 392
-        if int.from_bytes(self.user['dominated'], 'big') == 0:
-            self.window_min_height = 410
-            self.window_max_height = 410
-        else:
-            self.window_min_height = 155
-            self.window_max_height = 155
+        self.window_min_height = 410
+        self.window_max_height = 410
         self.setMinimumSize(self.window_min_width, self.window_min_height)
         self.setMaximumSize(self.window_max_width, self.window_max_height)
 
@@ -142,8 +138,7 @@ class WindowUserDetail(WindowDragable):
         layout_username.addWidget(self.lineedit_username)
         layout_username.addWidget(self.button_save_username)
         layout_username.addWidget(self.button_unsave_username)
-        if int.from_bytes(self.user['dominated'], 'big') == 0:
-            layout_username.addWidget(self.button_reset_passwd)
+        layout_username.addWidget(self.button_reset_passwd)
         layout_username.addStretch(1)
         layout_form.addLayout(layout_username, 1, 2)
         layout_userstatus = QtWidgets.QHBoxLayout()
@@ -151,9 +146,8 @@ class WindowUserDetail(WindowDragable):
         layout_userstatus.addWidget(self.button_lock_user)
         layout_userstatus.addWidget(self.button_unlock_user)
         layout_userstatus.addStretch()
-        if int.from_bytes(self.user['dominated'], 'big') == 0:
-            layout_form.addWidget(label_status, 2, 1)
-            layout_form.addLayout(layout_userstatus, 2, 2)
+        layout_form.addWidget(label_status, 2, 1)
+        layout_form.addLayout(layout_userstatus, 2, 2)
         layout_form.addWidget(label_last_login, 3, 1)
         layout_form.addWidget(self.label_last_login_value, 3, 2)
         layout_form.addWidget(label_created, 4, 1)
@@ -171,8 +165,7 @@ class WindowUserDetail(WindowDragable):
         layout_edit_button.addWidget(self.button_edit_permission)
         layout_edit_permission.addLayout(layout_edit_button)
         layout_edit_permission.addWidget(self.table_permission)
-        if int.from_bytes(self.user['dominated'], 'big') == 0:
-            layout_form.addLayout(layout_edit_permission, 6, 1, 1, 2)
+        layout_form.addLayout(layout_edit_permission, 6, 1, 1, 2)
         groupbox_form.setLayout(layout_form)
         layout.addStretch(1)
         layout.addWidget(groupbox_form)
@@ -237,8 +230,7 @@ class WindowUserDetail(WindowDragable):
         self.table_permission.setRowCount(
             len(self.parent.main_window.enviroments)
         )
-        if int.from_bytes(self.user['dominated'], 'big') == 0:
-            self.load_permission_table()
+        self.load_permission_table()
 
     def edit_permission(self):
         # 只读->编辑
