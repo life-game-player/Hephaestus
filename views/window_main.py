@@ -119,10 +119,10 @@ class WindowMain(WindowDragable):
         button_photo.setFixedSize(80, 80)
         button_photo.setObjectName('user_photo')
         button_photo.clicked.connect(self.show_profile)
-        label_username = QtWidgets.QLabel(self.username)
-        label_username.setObjectName('user_name')
-        label_userinfo = QtWidgets.QLabel(self.role)
-        label_userinfo.setObjectName('user_info')
+        self.label_username = QtWidgets.QLabel(self.username)
+        self.label_username.setObjectName('user_name')
+        self.label_userinfo = QtWidgets.QLabel(self.role)
+        self.label_userinfo.setObjectName('user_info')
 
         # 布局
         layout = QtWidgets.QHBoxLayout()
@@ -136,10 +136,10 @@ class WindowMain(WindowDragable):
         layout.addLayout(layout_v)
         layout.addStretch(10)
         layout_v.addStretch(2)
-        layout_v.addWidget(label_username)
+        layout_v.addWidget(self.label_username)
         layout_v.addStretch(1)
         layout_userinfo = QtWidgets.QHBoxLayout()
-        layout_userinfo.addWidget(label_userinfo)
+        layout_userinfo.addWidget(self.label_userinfo)
         layout_userinfo.addStretch()
         layout_v.addLayout(layout_userinfo)
         layout_v.addStretch(2)
@@ -549,6 +549,10 @@ class WindowMain(WindowDragable):
                 )
         else:
             self.show_message('服务器连接失败!')
+
+    def refresh_user(self, username, role):
+        self.label_username.setText(username)
+        self.label_userinfo.setText(role)
 
     def change_env(self):
         curr_env = self.combobox_env.currentText()

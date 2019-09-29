@@ -174,6 +174,7 @@ class WindowLogin(QtWidgets.QWidget):
                         if self.window_main:
                             self.window_main.renew_token(token)
                             self.window_main.refresh_env()
+                            self.window_main.refresh_user(username, role)
                             self.window_main.setEnabled(True)
                             self.window_main.set_enabled_cascade(True)
                         else:
