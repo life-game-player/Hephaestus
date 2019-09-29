@@ -113,6 +113,8 @@ class WindowEnvDetail(WindowDragable):
         self.button_unsave_env.setObjectName('bottom')
         self.button_unsave_env.setFixedSize(100, 35)
         self.button_unsave_env.clicked.connect(self.unsave_env)
+        self.label_info = QtWidgets.QLabel()
+        self.label_info.setObjectName('info')
         self.load_env_info()
 
         # 布局管理
@@ -150,6 +152,11 @@ class WindowEnvDetail(WindowDragable):
         groupbox_form.setLayout(layout_form)
         layout.addStretch(1)
         layout.addWidget(groupbox_form)
+        layout_info = QtWidgets.QHBoxLayout()
+        layout_info.addStretch(1)
+        layout_info.addWidget(self.label_info)
+        layout_info.addStretch(1)
+        layout.addLayout(layout_info)
         layout_buttons = QtWidgets.QHBoxLayout()
         layout_buttons.addStretch(1)
         layout_buttons.addWidget(self.button_save_env)
@@ -216,6 +223,7 @@ class WindowEnvDetail(WindowDragable):
         self.lineedit_username.setText(self.env['user'])
         self.lineedit_passwd.setStyleSheet('QLineEdit{border:None}')
         self.lineedit_passwd.setText(self.env['passwd'])
+        self.label_info.setText('')
 
         # 设置初始状态
         self.lineedit_envname.setCursorPosition(0)
@@ -235,7 +243,11 @@ class WindowEnvDetail(WindowDragable):
 
     def save_envname(self):
         new_envname = self.lineedit_envname.text()
-        if new_envname and new_envname != self.env['name']:
+        if (
+            new_envname != '<刷新环境配置......>' and
+            new_envname and
+            new_envname != self.env['name']
+        ):
             update_result = self.parent.main_window.kos.root.update_env_name(
                 self.parent.main_window.session_id,
                 self.parent.main_window.token,
@@ -272,4 +284,51 @@ class WindowEnvDetail(WindowDragable):
         self.load_env_info()
 
     def save_env(self):
-        pass
+        is_form_valid = True
+        self.label_write_host_hint.setVisible(False)
+        self.label_username_hint.setVisible(False)
+        self.label_passwd_hint.setVisible(False)
+        write_host = self.lineedit_write_host.text()
+        read_host = self.lineedit_read_host.text()
+        user = self.lineedit_username.text()
+        passwd = self.lineedit_passwd.text()
+        if not write_host:
+            self.label_write_host_hint.setVisible(True)
+            is_form_valid = False
+        if not user:
+            self.label_username_hint.setVisible(True)
+            is_form_valid = False
+        if not passwd:
+            self.label_passwd_hint.setVisible(True)
+            is_form_valid = False
+
+        if is_form_valid:
+            result = 999
+            try:
+                result = self.parent.main_window.kos.root.update_env(
+                    self.parent.main_window.session_id,
+                    self.parent.main_window.token,
+                    self.env['name'], read_host, write_host, user, passwd
+                )
+            except EOFError:
+                # 正在尝试重新连接服务器
+                pass
+            if result == 0:
+                self.close()
+                self.parent.children_windows['env_detail'] = None
+            elif result == 1:
+                self.label_info.setText('读库或写库连接失败!')
+            elif result == 2:
+                self.label_info.setText('读库和写库均连接失败!')
+            elif result == 3:
+                self.label_info.setText('数据库发生错误!')
+            elif result == 4:
+                self.label_info.setText('权限不足!')
+            elif result == -1:
+                # token过期
+                self.parent.main_window.set_enabled_cascade(False)
+                self.parent.main_window.login_window.show()
+            elif isinstance(result, str):
+                self.label_info.setText('已存在重复的环境: {}'.format(result))
+            else:
+                self.label_info.setText('未知错误!')

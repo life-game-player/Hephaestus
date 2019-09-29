@@ -207,6 +207,72 @@ class Kos(rpyc.Service):
             result = -1
         return result
 
+    def exposed_update_env(
+        self, session_id, token,
+        env, read_host, write_host, user, passwd
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = 999
+                if write_host and user and passwd:
+                    result1 = 0
+                    result2 = 0
+                    if read_host:
+                        result1 = mysql.test(read_host, user, passwd)
+                    result2 = mysql.test(write_host, user, passwd)
+                    result = result1 + result2
+                    if not result:
+                        # 是否存在重复的环境
+                        dup_env = environments.find_duplicate(
+                            self.host,
+                            self.user,
+                            self.passwd,
+                            env, read_host, write_host
+                        )
+                        if dup_env is None:
+                            result = 3  # 数据库错误
+                        else:
+                            if dup_env:
+                                dup_envname = dup_env[0]['name']
+                                if dup_envname != env:
+                                    return dup_envname
+                            # 更新数据库
+                            if environments.update(
+                                self.host,
+                                self.user,
+                                self.passwd,
+                                env, read_host, write_host, user, passwd
+                            ):
+                                result = 3  # 数据库错误
+                else:
+                    result = 2  # 写库连接失败
+            else:
+                result = 4  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'environment',
+                operator, 2, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
     def exposed_create_user(
         self, session_id, token,
         username, passwd, user_permission

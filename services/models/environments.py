@@ -2,40 +2,30 @@ import secrets
 import uuid
 
 import torch
-from clio import logger
 
 
 def create(
     host, user, passwd,
     env, env_read_host, env_write_host, env_user, env_passwd
 ):
-    result = 0
     conn = torch.connect(host, user, passwd, 'hephaestus')
-    try:
-        guid = str(uuid.uuid4())
-        vector = secrets.token_bytes(16)
-        sql = (
-            "INSERT INTO islands"
-            "(name, read_host, write_host, user, secret, guid, vector) "
-            "VALUES(%s, %s, %s, %s, "
-            "CBC_ENCRYPT(%s, %s, _binary %s), "
-            "%s, _binary %s)"
+    guid = str(uuid.uuid4())
+    vector = secrets.token_bytes(16)
+    sql = (
+        "INSERT INTO islands"
+        "(name, read_host, write_host, user, secret, guid, vector) "
+        "VALUES(%s, %s, %s, %s, "
+        "CBC_ENCRYPT(%s, %s, _binary %s), "
+        "%s, _binary %s)"
+    )
+    return torch.execute(
+        conn, sql,
+        (
+            env, env_read_host, env_write_host, env_user,
+            guid, env_passwd, vector,
+            guid, vector
         )
-        torch.execute(
-            conn, sql,
-            (
-                env, env_read_host, env_write_host, env_user,
-                guid, env_passwd, vector,
-                guid, vector
-            )
-        )
-    except Exception as e:
-        result = 1
-        logger.error(
-            "{} occured".format(type(e).__name__),
-            exc_info=True
-        )
-    return result
+    )
 
 
 def find_duplicate(
@@ -116,3 +106,34 @@ def update_name(
     conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
     sql = "UPDATE islands SET `name` = %s WHERE `name` = %s"
     return torch.execute(conn, sql, (new_env, env))
+
+
+def update(
+    db_host, db_user, db_passwd,
+    env, read_host, write_host, user, passwd
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    guid = str(uuid.uuid4())
+    vector = secrets.token_bytes(16)
+    sql = (
+        "UPDATE islands "
+        "SET read_host = %s, "
+        "write_host = %s, "
+        "user = %s, "
+        "secret = CBC_ENCRYPT(%s, %s, _binary %s), "
+        "guid = %s, "
+        "vector = _binary %s "
+        "WHERE `name` = %s"
+    )
+    return torch.execute(
+        conn, sql,
+        (
+            read_host if read_host else None,
+            write_host,
+            user,
+            guid, passwd, vector,
+            guid,
+            vector,
+            env
+        )
+    )

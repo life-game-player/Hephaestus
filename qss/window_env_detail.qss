@@ -22,6 +22,12 @@ QLabel#hint{
     margin-right:10px;
 }
 
+QLabel#info{
+    font-size:12px;
+    font-family:"微软雅黑";
+    color:red;
+}
+
 QLineEdit{
     font-size:14px;
     font-family:"微软雅黑";
