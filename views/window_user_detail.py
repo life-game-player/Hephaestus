@@ -13,9 +13,10 @@ import random
 
 
 class WindowUserDetail(WindowDragable):
-    def __init__(self, parent, user, x, y):
+    def __init__(self, parent, user, x, y, parent_row):
         super().__init__()
         self.parent = parent
+        self.row = parent_row
         self.children_windows = dict()
         self.user = user
 
@@ -75,6 +76,7 @@ class WindowUserDetail(WindowDragable):
         self.button_save_username = QtWidgets.QPushButton()
         self.button_save_username.setFixedSize(24, 24)
         self.button_save_username.setObjectName('save_username')
+        self.button_save_username.clicked.connect(self.save_username)
         self.button_unsave_username = QtWidgets.QPushButton()
         self.button_unsave_username.setFixedSize(24, 24)
         self.button_unsave_username.setObjectName('unsave_username')
@@ -196,7 +198,7 @@ class WindowUserDetail(WindowDragable):
             self.lineedit_username.setReadOnly(False)
             self.lineedit_username.setStyleSheet(
                 "QLineEdit{"
-                "border:1px solid rgb(175,222,255)"
+                "border:2px solid rgb(255,102,51)"
                 "}"
             )
             self.button_save_username.setVisible(True)
@@ -207,7 +209,9 @@ class WindowUserDetail(WindowDragable):
             event.type() == QtCore.QEvent.FocusOut and
             source == self.lineedit_username
         ):
-            self.unsave_username()
+            focusing_widget = QtWidgets.QApplication.focusWidget()
+            if focusing_widget != self.button_save_username:
+                self.unsave_username()
         return super().eventFilter(source, event)
 
     def load_user_info(self):
@@ -361,7 +365,6 @@ class WindowUserDetail(WindowDragable):
             self.user['id']
         )
         self.cancel_edit()  # 刷新权限表并取消编辑状态
-        print(result)
         if result and result == -1:
             # token失效
             self.parent.main_window.set_enabled_cascade(False)
@@ -414,3 +417,30 @@ class WindowUserDetail(WindowDragable):
                 self.children_windows['warning'] = info_reset_passwd
                 info_reset_passwd.exec()
                 self.children_windows['warning'] = None
+
+    def save_username(self):
+        new_name = self.lineedit_username.text()
+        if new_name:
+            result = self.parent.main_window.kos.root.update_username(
+                self.parent.main_window.session_id,
+                self.parent.main_window.token,
+                self.user['id'],
+                new_name
+            )
+            if result:
+                if result == -1:
+                    # token失效
+                    self.parent.main_window.set_enabled_cascade(False)
+                    self.parent.main_window.login_window.show()
+                else:
+                    error_rename_user = WindowError(self)
+                    error_rename_user.set_info('修改用户名失败!')
+                    self.children_windows['warning'] = error_rename_user
+                    error_rename_user.exec()
+                    self.children_windows['warning'] = None
+            else:
+                # 修改成功
+                self.parent.update_username_display(self.row, new_name)
+                self.unsave_username()  # 恢复只读状态
+                self.lineedit_username.setText(new_name)
+                self.user['name'] = new_name

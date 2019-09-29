@@ -1,0 +1,57 @@
+QWidget#body{
+    border-radius:5px;
+    background-color:rgba(255, 255, 255, 100%);
+    border-left:1px solid black;
+    border-right:1px solid black;
+    border-bottom:1px solid black;
+}
+
+QLabel{
+    font-size:14px;
+    font-family:"微软雅黑";
+}
+
+QLabel#title{
+    font-weight:15px;
+}
+
+QLabel#hint{
+    font-size:12px;
+    font-family:"微软雅黑";
+    color:red;
+    margin-right:10px;
+}
+
+QLineEdit{
+    font-size:14px;
+    font-family:"微软雅黑";
+    margin-left:10px;
+}
+
+QPushButton#save_envname{
+    background-image:url(images/checked.png);
+    background-color:rgba(51,204,0,50%);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+    border-radius:12px;
+}
+
+QPushButton#unsave_envname{
+    background-image:url(images/cancel.png);
+    background-color:rgba(255,0,0,50%);
+    background-position:center;
+    background-repeat:none;
+    border:None;
+    border-radius:12px;
+}
+
+QPushButton#bottom{
+    font-size:12px;
+    font-family:"微软雅黑";
+    font-weight:bold;
+    color:white;
+    border-radius:2px;
+    margin-top:5px;
+    background-color:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 rgb(255,102,51),stop:1 rgb(255,102,51));
+}

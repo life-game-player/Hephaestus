@@ -74,6 +74,7 @@ def get(
     else:
         sql = (
             "SELECT `name`, read_host, user, "
+            "write_host, "
             "CBC_DECRYPT(guid, secret, vector) AS passwd "
             "FROM islands "
             "WHERE `name` = '{}' "
@@ -99,3 +100,19 @@ def list(
     else:
         sql = "SELECT `name` FROM islands ORDER BY Created"
     return torch.query(conn, sql)
+
+
+def delete(
+    db_host, db_user, db_passwd, env
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    sql = "DELETE FROM islands WHERE `name` = %s"
+    return torch.execute(conn, sql, (env,))
+
+
+def update_name(
+    db_host, db_user, db_passwd, env, new_env
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    sql = "UPDATE islands SET `name` = %s WHERE `name` = %s"
+    return torch.execute(conn, sql, (new_env, env))

@@ -123,3 +123,14 @@ def update_passwd(
         "WHERE id = %s"
     )
     return torch.execute(conn, sql, (passwd, user_id))
+
+
+def update_name(
+    db_host, db_user, db_passwd, user_id, new_name
+):
+    conn = torch.connect(db_host, db_user, db_passwd, 'hephaestus')
+    sql = (
+        "UPDATE gods SET name = %s "
+        "WHERE id = %s"
+    )
+    return torch.execute(conn, sql, (new_name, user_id))

@@ -12,6 +12,7 @@ from views.window_dragable import WindowDragable
 from views.window_create_user import WindowCreateUser
 from views.window_manage_user import WindowManageUser
 from views.window_user_profile import WindowUserProfile
+from views.window_manage_env import WindowManageEnv
 from clio import logger
 
 
@@ -30,6 +31,7 @@ class WindowMain(WindowDragable):
         self.children_windows['config'] = None
         self.children_windows['create_user'] = None
         self.children_windows['manage_user'] = None
+        self.children_windows['manage_env'] = None
         self.tenants = dict()
         self.enviroments = list()
         self.username = username
@@ -426,8 +428,11 @@ class WindowMain(WindowDragable):
     def set_enabled_cascade(self, enabled):
         for k, v in self.children_windows.items():
             if v:
-                if k == 'manage_user' and enabled:
-                    v.load_users()
+                if enabled:
+                    if k == 'manage_user':
+                        v.load_users()
+                    elif k == 'manage_env':
+                        v.load_envs()
                 v.setEnabled(enabled)
         self.setEnabled(enabled)
 
@@ -509,7 +514,11 @@ class WindowMain(WindowDragable):
         config_window.activateWindow()
 
     def show_setting_window(self):
-        pass
+        env_window = self.children_windows['manage_env']
+        if not env_window:
+            env_window = WindowManageEnv(self)
+            self.children_windows['manage_env'] = env_window
+            env_window.show()
 
     def refresh_env(self):
         self.combobox_env.clear()

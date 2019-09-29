@@ -131,7 +131,6 @@ class Kos(rpyc.Service):
                     self.host, self.user, self.passwd, env,
                     operator
                 )
-                print(env_info, operator)
             if env_info:
                 list_tenants = tenants.list(
                     env_info[0]['read_host'],
@@ -593,6 +592,162 @@ class Kos(rpyc.Service):
                         del self.login_users[k]
             else:
                 result = 2  # 出错
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'user',
+                operator, 2, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_delete_env(
+        self, session_id, token, env
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = environments.delete(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    env
+                )
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'environment',
+                operator, 4, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_get_environment(
+        self, session_id, token, env
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = environments.get(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    env
+                )
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'environment',
+                operator, 4, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_update_env_name(
+        self, session_id, token,
+        env, new_env
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = environments.update_name(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    env,
+                    new_env
+                )
+            else:
+                result = 2  # 用户权限不足
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'environment',
+                operator, 2, 1 if result else 0
+            )
+        else:
+            # token失效
+            result = -1
+        return result
+
+    def exposed_update_username(
+        self, session_id, token,
+        user_id, new_name
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):
+            # token有效
+            operator = self.login_users[session_id]['id']
+
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                result = users.update_name(
+                    self.host,
+                    self.user,
+                    self.passwd,
+                    user_id,
+                    new_name
+                )
+            else:
+                result = 2  # 用户权限不足
             mnemosyne.create(
                 self.host,
                 self.user,
