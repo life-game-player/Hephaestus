@@ -26,6 +26,9 @@ class WindowManageUser(WindowDragable):
         # 设置窗口背景透明
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
+        # 设置窗口图标
+        self.setWindowIcon(self.main_window.icon)
+
         # 设置窗口大小
         self.window_min_width = 302
         self.window_max_width = 302

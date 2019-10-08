@@ -38,6 +38,9 @@ class WindowUserDetail(WindowDragable):
         self.setMinimumSize(self.window_min_width, self.window_min_height)
         self.setMaximumSize(self.window_max_width, self.window_max_height)
 
+        # 设置窗口图标
+        self.setWindowIcon(self.parent.main_window.icon)
+
         # 设置窗口子部件
         self.set_body_widget()
 

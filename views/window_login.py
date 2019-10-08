@@ -1,7 +1,6 @@
-import time
-
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
+from PyQt5 import QtGui
 
 from qss.qss_setter import QSSSetter
 from clio import logger
@@ -29,6 +28,15 @@ class WindowLogin(QtWidgets.QWidget):
 
         # 设置窗口背景透明
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+
+        # 设置窗口图标
+        self.icon = QtGui.QIcon()
+        self.icon.addPixmap(
+            QtGui.QPixmap("images/window_icon.jpg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off
+        )
+        self.setWindowIcon(self.icon)
 
         # 设置窗口子部件
         self.set_window_buttons_widget()

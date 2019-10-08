@@ -13,6 +13,7 @@ from views.window_create_user import WindowCreateUser
 from views.window_manage_user import WindowManageUser
 from views.window_user_profile import WindowUserProfile
 from views.window_manage_env import WindowManageEnv
+from views.window_delete_application import WindowDeleteApplication
 from clio import logger
 
 
@@ -32,6 +33,7 @@ class WindowMain(WindowDragable):
         self.children_windows['create_user'] = None
         self.children_windows['manage_user'] = None
         self.children_windows['manage_env'] = None
+        self.children_windows['del_app'] = None
         self.tenants = dict()
         self.enviroments = list()
         self.username = username
@@ -61,6 +63,14 @@ class WindowMain(WindowDragable):
         )
         # 设置窗口背景透明
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        # 设置窗口图标
+        self.icon = QtGui.QIcon()
+        self.icon.addPixmap(
+            QtGui.QPixmap("images/window_icon.jpg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off
+        )
+        self.setWindowIcon(self.icon)
 
         # 设置窗口子部件
         self.set_window_buttons_widget()
@@ -464,8 +474,11 @@ class WindowMain(WindowDragable):
                 menu_list.addAction('重置ES数据')
                 menu_list.addAction('重置GP数据')
                 menu_list.addAction('重建索引')
-                menu_workflow.addAction('删除流程')
-                menu_workflow.addAction('清理数据')
+                menu_workflow.addAction('删除流程定义')
+                menu_workflow.addAction(
+                    '删除流程申请',
+                    lambda: self.show_delete_application_window(curr_tenant.id)
+                )
                 menu_report = menu_workflow.addMenu('流程报表')
                 menu_report.addAction('重建索引')
                 menu_workflow.addAction('流程修复')
@@ -481,7 +494,6 @@ class WindowMain(WindowDragable):
                     "background-color:rgba(192,192,192,50%)"
                     "}"
                 )
-                print('ID: {}, Name: {}'.format(curr_tenant.id, curr_tenant.name))
                 localdb.visit_tenant(
                     curr_tenant.id,
                     self.combobox_env.currentText()
@@ -629,3 +641,14 @@ class WindowMain(WindowDragable):
             # Token失效
             self.setEnabled(False)
             self.login_window.show()
+
+    def show_delete_application_window(self, tenant_id):
+        window_del_app = self.children_windows['del_app']
+        if not window_del_app:
+            window_del_app = WindowDeleteApplication(
+                self,
+                tenant_id,
+                self.combobox_env.currentText()
+            )
+            self.children_windows['del_app'] = window_del_app
+        window_del_app.show()
