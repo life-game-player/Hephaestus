@@ -587,7 +587,10 @@ class WindowMain(WindowDragable):
                 self.item_root_favourite_tenants.setHidden(True)
                 tenant_search = re.compile(r'{}'.format(keyword))
                 for i, t in enumerate(self.tenants['所有商户']):
-                    if not tenant_search.search(t.name):
+                    if (
+                        (not tenant_search.search(t.name)) and
+                        (not (keyword.isnumeric() and int(keyword) == t.id))
+                    ):
                         self.item_root_all_tenants.child(i).setHidden(True)
                         filtered_count += 1
                 self.item_root_all_tenants.setText(
