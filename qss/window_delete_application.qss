@@ -62,6 +62,16 @@ QLabel{
     font-weight:bold;
 }
 
+QLabel#env{
+    font-size:12px;
+    font-family:"微软雅黑";
+    margin-top:5px;
+}
+
+QLabel#hint{
+    color:red;
+}
+
 QComboBox{
     font-size:12px;
     font-family:"微软雅黑";

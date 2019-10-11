@@ -63,6 +63,7 @@ class WindowInfo(QtWidgets.QDialog):
         layout_info.addWidget(label_icon)
         layout_info.addWidget(self.label_info)
         layout_info.addWidget(self.label_selectable_info)
+        self.label_selectable_info.setVisible(False)
         layout.addStretch(1)
         layout.addLayout(layout_info)
         layout.addStretch(1)
@@ -86,3 +87,4 @@ class WindowInfo(QtWidgets.QDialog):
 
     def set_selectable_info(self, info):
         self.label_selectable_info.setText(info)
+        self.label_selectable_info.setVisible(True)

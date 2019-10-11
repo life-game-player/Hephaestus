@@ -11,6 +11,7 @@ from models import environments
 from models import mnemosyne
 from models import tenants
 from models import permissions
+from models import applications
 
 
 class Kos(rpyc.Service):
@@ -824,4 +825,134 @@ class Kos(rpyc.Service):
         else:
             # token失效
             result = -1
+        return result
+
+    def exposed_validate_application(
+        self, env, session_id, token,
+        params, param_type, tenant_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    if param_type == 'KEY':
+                        result = applications.list_by_keys(
+                            read_host,
+                            db_user,
+                            db_passwd,
+                            tenant_db_name,
+                            tenant_id,
+                            params
+                        )
+                    elif param_type == 'FLOWNO':
+                        result = applications.list_by_flownos(
+                            read_host,
+                            db_user,
+                            db_passwd,
+                            tenant_db_name,
+                            tenant_id,
+                            params
+                        )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'application',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_delete_application(
+        self, env, session_id, token,
+        application_id_list, tenant_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = applications.delete(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        application_id_list
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 3  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'application',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
         return result

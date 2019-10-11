@@ -40,11 +40,45 @@ def query(conn, sql):
     return results
 
 
+def query_with_param(conn, sql, params):
+    results = None
+    try:
+        with conn.cursor(pymysql.cursors.DictCursor) as c:
+            c.execute(sql, params)
+            results = c.fetchall()
+    except Exception as e:
+        logger.error(
+            "{} occured".format(type(e).__name__),
+            exc_info=True
+        )
+    finally:
+        conn.close()
+    return results
+
+
 def execute_list(conn, list_sql):
     try:
         with conn.cursor() as c:
             for sql in list_sql:
                 c.execute(sql)
+        conn.commit()
+        return 0
+    except Exception as e:
+        conn.rollback()
+        logger.error(
+            "{} occured".format(type(e).__name__),
+            exc_info=True
+        )
+        return 1
+    finally:
+        conn.close()
+
+
+def execute_list_with_param(conn, list_sql):
+    try:
+        with conn.cursor() as c:
+            for sql, param in list_sql:
+                c.execute(sql, param)
         conn.commit()
         return 0
     except Exception as e:
