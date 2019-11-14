@@ -1,0 +1,42 @@
+QWidget#applications{
+    background-color:white;
+    border:1px solid gray;
+    border-radius:2px;
+}
+
+QTableWidget{
+    background-color:white;
+    border:1px solid black;
+    border-bottom-left-radius:5px;
+    border-bottom-right-radius:5px;
+    gridline-color:lightgray;
+}
+
+QTableWidget::item{
+    selection-color:black;
+}
+
+QTableWidget::item:selected{
+    background-color:rgba(51,204,255,50);
+}
+
+QHeaderView::section{
+    background-color:rgb(255,153,102);
+    height:25px;
+    font-size:14px;
+    font-family:"微软雅黑";
+    font-weight:bold;
+    color:white;
+}
+
+QLabel#hint{
+    font-size:14px;
+    font-family:"微软雅黑";
+    font-weight:bold;
+}
+
+QLabel#info{
+    font-size:12px;
+    font-family:"微软雅黑";
+    color:red;
+}

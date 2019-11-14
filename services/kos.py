@@ -12,6 +12,10 @@ from models import mnemosyne
 from models import tenants
 from models import permissions
 from models import applications
+from models import instances
+from models import activities
+from models import tasks
+from models import executions
 
 
 class Kos(rpyc.Service):
@@ -951,6 +955,534 @@ class Kos(rpyc.Service):
                 self.user,
                 self.passwd,
                 'application',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_application(
+        self, session_id, token,
+        env, flowno, tenant_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = applications.get_by_flowno(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        flowno
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'application',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_root_instances(
+        self, session_id, token,
+        env, applicationid, tenant_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = instances.list_root_instances(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        applicationid
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'instance',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_persistent_variables(
+        self, session_id, token,
+        env, applicationid, tenant_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = applications.list_persistent_variables(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        applicationid
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'application',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_runtime_variables(
+        self, session_id, token,
+        env, applicationid, tenant_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = applications.list_runtime_variables(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        applicationid
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'application',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_activities(
+        self, session_id, token,
+        env, procinstid, tenant_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = activities.list_by_procinstid(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        procinstid
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'application',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_tenant_detail(
+        self, session_id, token,
+        env, tenant_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                result = tenants.get_detail(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'tenant',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_task(
+        self, session_id, token,
+        env, tenant_id, task_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = tasks.get(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        task_id
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'task',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_instance(
+        self, session_id, token,
+        env, tenant_id, instance_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = instances.get(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        instance_id
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'instance',
+                operator, 3, 1 if isinstance(result, int) else 0
+            )
+        else:  # token失效
+            return -1
+        return result
+
+    def exposed_get_executions(
+        self, session_id, token,
+        env, tenant_id, instance_id
+    ):
+        if (
+            session_id in self.login_users and
+            token == self.login_users[session_id]['token']
+        ):  # token有效
+            operator = self.login_users[session_id]['id']
+            # 检查用户权限
+            operator_info = users.get(
+                self.host, self.user, self.passwd, operator
+            )
+            if (
+                operator_info and
+                int.from_bytes(operator_info[0]['dominated'], 'big')
+            ):
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env
+                )
+            else:
+                env_info = environments.get(
+                    self.host, self.user, self.passwd, env,
+                    operator
+                )
+            if env_info:
+                read_host = env_info[0]['read_host']
+                db_user = env_info[0]['user']
+                db_passwd = env_info[0]['passwd']
+                tenant_db = tenants.get_tenant_db(
+                    read_host,
+                    db_user,
+                    db_passwd,
+                    tenant_id
+                )
+                if tenant_db:
+                    tenant_db_name = tenant_db[0]['tenant_db']
+                    result = executions.list_by_procinstid(
+                        read_host,
+                        db_user,
+                        db_passwd,
+                        tenant_db_name,
+                        tenant_id,
+                        instance_id
+                    )
+                else:
+                    result = 2  # 找不到商户数据库
+            else:
+                result = 1  # 环境无效
+            mnemosyne.create(
+                self.host,
+                self.user,
+                self.passwd,
+                'execution',
                 operator, 3, 1 if isinstance(result, int) else 0
             )
         else:  # token失效

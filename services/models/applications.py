@@ -35,6 +35,51 @@ def list_by_flownos(
     return torch.query_with_param(conn, sql, tuple(flowno_list))
 
 
+def get_by_flowno(
+    db_host, db_user, db_passwd, db_name,
+    tenant_id, flowno
+):
+    conn = torch.connect(db_host, db_user, db_passwd, db_name)
+    sql = (
+        "SELECT a.ApplicationID, a.ApplicantUserID, "
+        "u.name_cn AS ApplicantUserName, a.`Status`, a.DefKey, "
+        "a.Created, a.Modified, a.`Comment` "
+        "FROM flowcraft_application a "
+        "LEFT JOIN yeeoffice_list_userinfo_data u "
+        "ON a.ApplicantUserID = u.listdataid "
+        "WHERE a.TenantID = %s AND a.FlowNo = %s"
+    )
+    return torch.query_with_param(conn, sql, (tenant_id, flowno))
+
+
+def list_persistent_variables(
+    db_host, db_user, db_passwd, db_name,
+    tenant_id, applicationid
+):
+    conn = torch.connect(db_host, db_user, db_passwd, db_name)
+    sql = (
+        "SELECT `Name`, `Type`, `Value`, Created, Modified "
+        "FROM flowcraft_variable "
+        "WHERE TenantID = %s AND ApplicationID = %s "
+        "ORDER BY `Name`"
+    )
+    return torch.query_with_param(conn, sql, (tenant_id, applicationid))
+
+
+def list_runtime_variables(
+    db_host, db_user, db_passwd, db_name,
+    tenant_id, applicationid
+):
+    conn = torch.connect(db_host, db_user, db_passwd, db_name)
+    sql = (
+        "SELECT `Name`, `Type`, `Value`, Created, Modified "
+        "FROM flowcraft_variableruntime "
+        "WHERE TenantID = %s AND ApplicationID = %s "
+        "ORDER BY `Name`"
+    )
+    return torch.query_with_param(conn, sql, (tenant_id, applicationid))
+
+
 def delete(
     db_host, db_user, db_passwd, db_name,
     tenant_id, application_id_list

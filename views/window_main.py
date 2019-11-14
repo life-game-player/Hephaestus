@@ -14,6 +14,8 @@ from views.window_manage_user import WindowManageUser
 from views.window_user_profile import WindowUserProfile
 from views.window_manage_env import WindowManageEnv
 from views.window_delete_application import WindowDeleteApplication
+from views.window_analyze_application import WindowAnalyzeApplication
+from views.window_tenant_detail import WindowTenantDetail
 from clio import logger
 
 
@@ -34,6 +36,8 @@ class WindowMain(WindowDragable):
         self.children_windows['manage_user'] = None
         self.children_windows['manage_env'] = None
         self.children_windows['del_app'] = None
+        self.children_windows['anal_app'] = None
+        self.children_windows['tenant_detail'] = None
         self.tenants = dict()
         self.enviroments = list()
         self.username = username
@@ -233,7 +237,7 @@ class WindowMain(WindowDragable):
 
         # 商户信息
         self.tree_tenants = QtWidgets.QTreeWidget()
-        #self.tree_tenants.itemClicked.connect(self.show_tenant_details)
+        self.tree_tenants.itemClicked.connect(self.show_tenant_details)
         self.tree_tenants.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.tree_tenants.customContextMenuRequested.connect(
             self.show_tenant_menu
@@ -464,6 +468,8 @@ class WindowMain(WindowDragable):
             if parent:
                 # 排除一级节点
                 group = parent.text(0)[:4]
+                if group == '搜索结果':
+                    group = '所有商户'
                 index = parent.indexOfChild(selected_item)
                 curr_tenant = self.tenants[group][index]
                 menu_tenant = QtWidgets.QMenu()
@@ -480,8 +486,14 @@ class WindowMain(WindowDragable):
                     lambda: self.show_delete_application_window(curr_tenant.id)
                 )
                 menu_report = menu_workflow.addMenu('流程报表')
-                menu_report.addAction('重建索引')
-                menu_workflow.addAction('流程修复')
+                menu_report.addAction('删除记录')
+                menu_workflow.addAction(
+                    '流程分析',
+                    lambda: self.show_analyze_application_window(
+                        curr_tenant.id,
+                        curr_tenant.name
+                    )
+                )
                 menu_tenant.setStyleSheet(
                     "QMenu::item{"
                     "background-color:transparent;"
@@ -655,3 +667,49 @@ class WindowMain(WindowDragable):
             )
             self.children_windows['del_app'] = window_del_app
         window_del_app.show()
+
+    def show_analyze_application_window(self, tenant_id, tenant_name):
+        window_anal_app = self.children_windows['anal_app']
+        if not window_anal_app:
+            window_anal_app = WindowAnalyzeApplication(
+                self,
+                tenant_id,
+                tenant_name,
+                self.combobox_env.currentText()
+            )
+            self.children_windows['anal_app'] = window_anal_app
+        window_anal_app.show()
+
+    def show_tenant_details(self, item, col):
+        parent = item.parent()
+        if parent:
+            group = parent.text(0)[:4]
+            if group == '搜索结果':
+                group = '所有商户'
+            index = parent.indexOfChild(item)
+            curr_tenant = self.tenants[group][index]
+            tenant_detail_window = self.children_windows['tenant_detail']
+            if not tenant_detail_window:
+                tenant_detail_result = self.kos.root.get_tenant_detail(
+                    self.session_id,
+                    self.token,
+                    self.combobox_env.currentText(),
+                    curr_tenant.id
+                )
+                if isinstance(tenant_detail_result, int):
+                    if tenant_detail_result == -1:
+                        # token失效
+                        self.set_enabled_cascade(False)
+                        self.login_window.show()
+                    return
+                elif tenant_detail_result:
+                    tenant_detail_window = WindowTenantDetail(
+                        self,
+                        tenant_detail_result[0]
+                    )
+                    self.children_windows['tenant_detail'] = \
+                        tenant_detail_window
+                else:
+                    # 找不到商户
+                    return
+            tenant_detail_window.show()

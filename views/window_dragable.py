@@ -155,14 +155,14 @@ class WindowDragable(QtWidgets.QWidget):
                     rightbottom_point.x() - mouse_x <
                     self.window_max_width
                 ):
-                    rect_new.setX(mouse_x)
+                    rect_new.setLeft(mouse_x)
 
                 if (
                     self.window_min_height <
                     rightbottom_point.y() - mouse_y <
                     self.window_max_height
                 ):
-                    rect_new.setY(mouse_y)
+                    rect_new.setTop(mouse_y)
 
             if self.mouse_pos == 'TOP':
                 if (
@@ -170,7 +170,7 @@ class WindowDragable(QtWidgets.QWidget):
                     rightbottom_point.y() - mouse_y <
                     self.window_max_height
                 ):
-                    rect_new.setY(mouse_y)
+                    rect_new.setTop(mouse_y)
 
             if self.mouse_pos == 'RIGHTBOTTOM':
                 if (
@@ -178,13 +178,13 @@ class WindowDragable(QtWidgets.QWidget):
                     mouse_x - topleft_point.x() <
                     self.window_max_width
                 ):
-                    rect_new.setX(mouse_x)
+                    rect_new.setRight(mouse_x)
                 if (
                     self.window_min_height <
                     mouse_y - topleft_point.y() <
                     self.window_max_height
                 ):
-                    rect_new.setY(mouse_y)
+                    rect_new.setBottom(mouse_y)
 
             if self.mouse_pos == 'BOTTOM':
                 if (
@@ -192,7 +192,7 @@ class WindowDragable(QtWidgets.QWidget):
                     mouse_y - topleft_point.y() <
                     self.window_max_height
                 ):
-                    rect_new.setY(mouse_y)
+                    rect_new.setBottom(mouse_y)
 
             if self.mouse_pos == 'RIGHTTOP':
                 if (
@@ -200,13 +200,13 @@ class WindowDragable(QtWidgets.QWidget):
                     mouse_x - topleft_point.x() <
                     self.window_max_width
                 ):
-                    rect_new.setX(mouse_x)
+                    rect_new.setRight(mouse_x)
                 if (
                     self.window_min_height <
                     rightbottom_point.y() - mouse_y <
                     self.window_max_height
                 ):
-                    rect_new.setY(mouse_y)
+                    rect_new.setTop(mouse_y)
 
             if self.mouse_pos == 'LEFTBOTTOM':
                 if (
@@ -214,13 +214,13 @@ class WindowDragable(QtWidgets.QWidget):
                     rightbottom_point.x() - mouse_x <
                     self.window_max_width
                 ):
-                    rect_new.setX(mouse_x)
+                    rect_new.setLeft(mouse_x)
                 if (
                     self.window_min_height <
                     mouse_y - topleft_point.y() <
                     self.window_max_height
                 ):
-                    rect_new.setY(mouse_y)
+                    rect_new.setBottom(mouse_y)
 
             self.setGeometry(rect_new)
 

@@ -137,31 +137,31 @@ class WindowDeleteApplication(WindowDragable):
         self.button_delete.clicked.connect(self.delete_application)
 
         # 布局
-        self.layout_main = QtWidgets.QVBoxLayout(self.widget_body)
+        layout_main = QtWidgets.QVBoxLayout(self.widget_body)
         groupbox_del_by = QtWidgets.QGroupBox(self.widget_body)
         layout_del_by = QtWidgets.QVBoxLayout(groupbox_del_by)
         layout_del_by.addWidget(radio_by_defkey)
         layout_del_by.addWidget(radio_by_flowno)
         groupbox_del_by.setLayout(layout_del_by)
-        self.layout_main.addWidget(groupbox_del_by)
+        layout_main.addWidget(groupbox_del_by)
         layout_env = QtWidgets.QHBoxLayout()
         layout_env.addWidget(label_env)
         layout_env.addStretch()
-        self.layout_main.addLayout(layout_env)
-        self.layout_main.addWidget(self.text_edit_params)
-        self.layout_main.addWidget(self.label_info)
+        layout_main.addLayout(layout_env)
+        layout_main.addWidget(self.text_edit_params)
+        layout_main.addWidget(self.label_info)
         layout_validation_results = QtWidgets.QHBoxLayout()
         layout_validation_results.addWidget(self.label_validation_results)
         layout_validation_results.addStretch()
         layout_validation_results.addWidget(self.combobox_show_results)
-        self.layout_main.addLayout(layout_validation_results)
-        self.layout_main.addWidget(self.tree_validation)
+        layout_main.addLayout(layout_validation_results)
+        layout_main.addWidget(self.tree_validation)
         layout_buttons = QtWidgets.QHBoxLayout()
         layout_buttons.addStretch(1)
         layout_buttons.addWidget(self.button_validate)
         layout_buttons.addWidget(self.button_delete)
         layout_buttons.addStretch(1)
-        self.layout_main.addLayout(layout_buttons)
+        layout_main.addLayout(layout_buttons)
 
         # 初始化
         self.label_validation_results.setVisible(False)
@@ -169,7 +169,7 @@ class WindowDeleteApplication(WindowDragable):
         self.tree_validation.setVisible(False)
         self.button_delete.setVisible(False)
 
-        self.widget_body.setLayout(self.layout_main)
+        self.widget_body.setLayout(layout_main)
 
     def close_window(self):
         self.close()
@@ -240,6 +240,8 @@ class WindowDeleteApplication(WindowDragable):
                         self.validation_results['failed'].append(i)
             else:
                 # 所有都验证失败
+                self.tree_validation.setVisible(True)
+                self.tree_validation.clear()
                 for i, p in enumerate(param_list):
                     item_validation = QtWidgets.QTreeWidgetItem(
                         self.tree_validation

@@ -34,56 +34,42 @@ QWidget#body{
     border-bottom:1px solid black;
 }
 
-QRadioButton{
-    font-size:14px;
-    font-family:"微软雅黑";
-}
-
-QPlainTextEdit::hover{
-    border:1px solid rgb(255,102,51);
-    border-radius:2px;
-}
-
-QPlainTextEdit{
-    border:1px solid black;
-    border-radius:2px;
-    padding:5px;
-    margin-bottom:5px;
-}
-
-QGroupBox{
-    border:1px solid black;
-    border-radius:2px;
-}
-
 QLabel{
     font-size:12px;
     font-family:"微软雅黑";
-    font-weight:bold;
 }
 
-QLabel#env{
-    font-size:12px;
-    font-family:"微软雅黑";
-    margin-top:5px;
-}
-
-QLabel#hint{
+QLabel#info{
     color:red;
 }
 
-QComboBox{
+QLabel#base{
+    font-size:14px;
+    font-weight:bold;
+}
+
+QLabel#title{
+    font-weight:bold;
+}
+
+QPlainTextEdit{
     font-size:12px;
     font-family:"微软雅黑";
-}
-
-QTreeWidget{
     border:None;
-    padding-left:0;
 }
 
-QPushButton#main{
+QLineEdit{
     font-size:12px;
+    font-family:"微软雅黑";
+    height:24px;
+}
+
+QLineEdit::hover{
+    border:1px solid rgb(255,102,51);
+}
+
+QPushButton#analyze{
+    font-size:14px;
     font-family:"微软雅黑";
     font-weight:bold;
     color:white;
@@ -91,4 +77,11 @@ QPushButton#main{
     margin-left:5px;
     margin-right:5px;
     background-color:qlineargradient(spread:pad,x1:0,y1:0,x2:0,y2:1,stop:0 rgb(255,102,51),stop:1 rgb(255,102,51));
+}
+
+QTreeWidget{
+    border:None;
+    padding-left:0;
+    font-size:12px;
+    font-family:"微软雅黑";
 }
